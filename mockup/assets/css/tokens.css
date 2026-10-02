@@ -1,0 +1,169 @@
+/* ==========================================================================
+   TRKB · Design tokens
+   Based on the Duolingo design system from nexu-io/open-design
+   (design-systems/duolingo/tokens.css + DESIGN.md).
+
+   Switched by two attributes on <html>:
+       <html data-accent="green" data-mode="light">
+
+   What is taken verbatim from the source package:
+     Owl Green #58cc02 · Eel Blue #1cb0f6 · Streak Orange #ff9600
+     Bee Yellow #ffc800 · Cardinal Red #ff4b4b
+     4px hard offset shadow (the "tactile press" signature)
+     2px borders, never hairlines
+     12/16/20px + pill radii
+     Spring easing cubic-bezier(.34, 1.56, .64, 1)
+     Display type that starts big
+
+   Where this DEPARTS from the source, and why:
+
+     1. Text on a bright accent fill is DARK, not white. Duolingo's own
+        pairing puts white on #58cc02, which measures 2.09:1 — far below
+        WCAG AA. Dark ink on the same green measures 7.86:1. The bright
+        brand fill is the point, so the fill is kept and the ink is changed.
+     2. An accent used AS TEXT on the white canvas is a darkened variant
+        (--accent-text). The raw brand green is 1.9:1 on white and unreadable
+        as a label.
+     3. A dark mode is added. The source package is white-canvas only; these
+        surfaces follow Duolingo's own app dark theme (deep teal-navy), and
+        keep the chunky shadow and 2px borders intact.
+     4. Secondary text moved from #777777 (4.48:1) to #6b6b6b (5.33:1).
+
+   Every number above was measured, not estimated. See docs/08.
+   ========================================================================== */
+
+:root {
+  /* Feather Bold and Mona Sans are proprietary. Fredoka is the closest
+     rounded display face on Google Fonts; Nunito carries the body. */
+  --font-display: 'Fredoka', 'Feather Bold', 'DIN Round Pro', ui-rounded, system-ui, sans-serif;
+  --font-body: 'Nunito', 'Mona Sans', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  /* Type scale — source §3. Duolingo never whispers. */
+  --t-xs: 12px; --t-sm: 13px; --t-base: 15px; --t-lg: 18px;
+  --t-xl: 24px; --t-2xl: 32px; --t-3xl: 40px; --t-4xl: 56px;
+  --leading: 1.5;
+  --leading-tight: 1.15;
+
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+
+  /* Shape — friendly, never sharp. */
+  --r-sm: 12px;   /* inputs, buttons */
+  --r-md: 16px;   /* cards, rows — the signature radius */
+  --r-lg: 20px;   /* featured containers, sheets */
+  --r-pill: 9999px;
+
+  --bw: 2px;      /* the border weight; hairlines are off-brand */
+
+  /* Motion — back-out overshoot is the gamified joy. */
+  --ease: cubic-bezier(.34, 1.56, .64, 1);
+  --ease-out: cubic-bezier(.2, 0, 0, 1);
+  --dur-fast: 180ms;
+  --dur: 320ms;
+
+  --maxw: 1080px;
+  --nav-h: 64px;
+  --side-w: 240px;
+
+  /* ---- LIGHT (the source package's native mode) ---------------------- */
+  --bg: #ffffff;           /* Snow — never tinted */
+  --surface: #f7f7f7;      /* Eel — section break, secondary surface */
+  --surface-2: #efefef;
+  --card: #ffffff;
+  --fg: #3c3c3c;           /* Eel Black */
+  --muted: #6b6b6b;        /* retuned from #777 for 5.33:1 */
+  --meta: #8e8e8e;
+  --border: #e5e5e5;       /* Swan */
+  --border-strong: #d7d7d7;
+
+  /* The 4px hard shadow. No blur — it reads as a physical edge. */
+  --shadow: 0 4px 0 var(--border-strong);
+  --shadow-sm: 0 3px 0 var(--border);
+
+  --success: #58cc02;      /* owl green — "correct" is the brand */
+  --success-bg: #e8f8d8;
+  --success-text: #3a8701;
+  --warn: #ffc800;         /* bee yellow */
+  --warn-bg: #fff4d1;
+  --warn-text: #8a6a00;
+  --danger: #ff4b4b;       /* cardinal red */
+  --danger-bg: #ffe2e2;
+  --danger-text: #c62828;
+  --info: #1cb0f6;         /* eel blue */
+  --info-bg: #ddf2fe;
+  --info-text: #147daf;
+
+  --streak: #ff9600;
+  --gem: #ce82ff;
+
+  --scrim: rgba(28, 36, 40, .45);
+  --focus: 0 0 0 3px rgba(28, 176, 246, .35);
+  color-scheme: light;
+}
+
+/* ---- DARK ------------------------------------------------------------
+   Not in the source package. Surfaces follow Duolingo's own app dark
+   theme; the chunky shadow becomes a darker edge rather than disappearing,
+   because losing it would lose the system's signature. */
+:root[data-mode="dark"] {
+  --bg: #131f24;
+  --surface: #1f2f35;
+  --surface-2: #27383f;
+  --card: #1a2b31;
+  --fg: #f1f7fb;
+  --muted: #a9bcc4;
+  --meta: #7f949d;
+  --border: #37464f;
+  --border-strong: #0d1619;
+
+  --shadow: 0 4px 0 var(--border-strong);
+  --shadow-sm: 0 3px 0 var(--border-strong);
+
+  --success-bg: #1d3310;
+  --success-text: #79d344;
+  --warn-bg: #3a2f08;
+  --warn-text: #ffd34d;
+  --danger-bg: #3d1c1c;
+  --danger-text: #ff8d8d;
+  --info-bg: #10323f;
+  --info-text: #61c8f8;
+
+  --scrim: rgba(0, 0, 0, .62);
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   ACCENTS
+     --accent        the bright brand fill
+     --accent-ink    text sitting ON that fill  (dark, >= 4.5:1)
+     --accent-text   the accent used AS text on the canvas
+     --accent-deep   the pressed tone and the 4px shadow under a filled button
+     --accent-soft   tinted surface
+   ========================================================================== */
+
+:root,
+:root[data-accent="green"] {
+  --accent: #58cc02; --accent-ink: #225001; --accent-text: #3a8701;
+  --accent-deep: #46a302; --accent-light: #89e219; --accent-soft: #e8f8d8;
+}
+:root[data-accent="blue"] {
+  --accent: #1cb0f6; --accent-ink: #0a3f59; --accent-text: #147daf;
+  --accent-deep: #1181b8; --accent-light: #5fc8f8; --accent-soft: #ddf2fe;
+}
+:root[data-accent="orange"] {
+  --accent: #ff9600; --accent-ink: #633a00; --accent-text: #ab6400;
+  --accent-deep: #c27100; --accent-light: #ffb84d; --accent-soft: #fff0d6;
+}
+
+/* On the dark canvas the raw brand colour is already 6.9–8.1:1, so it is
+   used directly as text; only the soft surfaces need redefining. */
+:root[data-mode="dark"][data-accent="green"]  { --accent-text: #58cc02; --accent-soft: #1d3310; }
+:root[data-mode="dark"][data-accent="blue"]   { --accent-text: #1cb0f6; --accent-soft: #10323f; }
+:root[data-mode="dark"][data-accent="orange"] { --accent-text: #ff9600; --accent-soft: #3a2f08; }
+
+/* Subject identity — dots and rails only, never text. */
+:root {
+  --subj-1: #1cb0f6; --subj-2: #58cc02; --subj-3: #ff9600;
+  --subj-4: #ce82ff; --subj-5: #ff4b4b; --subj-6: #2b70c9;
+}
