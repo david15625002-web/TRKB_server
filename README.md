@@ -26,7 +26,7 @@ Kecerdasan Buatan, supaya informasi tidak lagi hilang di tengah grup WhatsApp:
 | 1 | **Jadwal** | Jadwal kuliah per kelas per semester. Diinput sekali oleh sekretaris (manual atau impor CSV/Excel), lalu seluruh pertemuan mingguan dibuat otomatis. Perubahan ruang, kuliah pengganti, dan pembatalan ditangani per-pertemuan. |
 | 2 | **Peran & Struktur** | Hirarki berjangkauan: Ketua HIMA → Divisi → Kelas → Anggota. Ketua Kelas `TRKB-1 25` secara teknis **tidak bisa** mengubah data kelas lain. Struktur HIMA bisa ditambah/dihapus Super Admin. |
 | 3 | **Tugas & Pengingat** | Ketua Kelas / Sekretaris memasukkan tugas dari dosen. Sistem mengirim pengingat **H-1** (plus H-3 jam) ke setiap anggota kelas lewat notifikasi dalam aplikasi, push, dan email. |
-| 4 | **Profil** | Avatar, banner, bio, tema pilihan sendiri, tag keahlian robotika, portofolio proyek, dan lencana pencapaian. |
+| 4 | **Profil** | Avatar, banner, bio, warna aksen pilihan sendiri, tag keahlian robotika, portofolio proyek, dan lencana pencapaian. |
 | 5 | **Obrolan** | Ruang otomatis per kelas & per divisi, kanal pengumuman, ruang publik, dan pesan pribadi (DM). Realtime. |
 
 ## Prinsip desain
@@ -73,9 +73,9 @@ xdg-open mockup/index.html
 python3 -m http.server 8080 --directory mockup
 ```
 
-Prototipe memuat 10 layar, 4 preset tema (Cyan HUD, Amber Industrial, Campus,
-Blueprint) masing-masing dengan mode terang & gelap, dan animasi yang
-direncanakan untuk aplikasi sebenarnya. Lihat [`mockup/README.md`](mockup/README.md).
+Prototipe memuat 8 layar, 6 pilihan warna aksen dengan mode terang & gelap,
+dan animasi yang direncanakan untuk aplikasi sebenarnya.
+Lihat [`mockup/README.md`](mockup/README.md).
 
 ## Lisensi
 

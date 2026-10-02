@@ -3,219 +3,174 @@
 Working implementation: [`mockup/assets/css/tokens.css`](../mockup/assets/css/tokens.css)
 and [`mockup/assets/css/app.css`](../mockup/assets/css/app.css).
 
-## Direction
+## Direction: soft tonal
 
-"Robotika style" here means **instrument panel**, not sci-fi decoration. The
-reference points are robot teleoperation UIs, oscilloscope screens and PLC
-diagnostic panels: dense data, monospace for anything numeric, thin precise
-rules, and a single accent colour used sparingly so that when something *is*
-accented it means something.
+Influenced by Material 3 and Fluent: surfaces separated by **tone**, generous
+rounding, soft elevation, and one accent colour the student picks for
+themselves.
 
-The discipline that keeps it from looking like a toy:
+> **This replaced an earlier direction.** The first version was an instrument
+> panel — hairline borders on near-black, uppercase monospace labels, HUD
+> scanlines. It was coherent, and it was *stiff*. Four specific things caused
+> that, and they are worth naming so they do not creep back:
+>
+> | Stiff | Now |
+> |---|---|
+> | Every label uppercase monospace with wide letter-spacing | Labels are ordinary sentence-case text |
+> | 1px borders separating every surface | Surfaces separated by tone; borders are rare |
+> | Small radii (3–14px), square blueprint corners | 12–28px, pill-shaped controls |
+> | Four fixed theme presets to choose between | One warm system, six accent colours |
 
-1. **Accent = state, not decoration.** The accent colour marks the live thing —
-   the next class, an urgent deadline, the active tab. If everything glows,
-   nothing reads as urgent.
-2. **Monospace for data, sans for prose.** NIM, room codes, times, countdowns and
-   class codes are monospace; names, descriptions and chat are sans. This is the
-   single cheapest trick that makes an interface feel like instrumentation.
-3. **Hairline borders over heavy shadows.** 1px rules at low opacity. Panels sit
-   *in* the surface, not floating above it.
-4. **Motion reports state changes.** A countdown ticks because time is passing; a
-   status LED pulses because something is live. Nothing animates to be pretty.
+The four rules that hold it together:
 
-## Four presets × two modes
+1. **Tone, not borders.** A card is a lighter or darker surface than its parent.
+   Reaching for a border is usually a sign the tone step is too small.
+2. **Rounding is consistent and generous.** Controls are pills; cards are 24px.
+   Mixing radii is what makes an interface look assembled from parts.
+3. **One accent, used for state.** The accent marks the live thing — next class,
+   active tab, primary action. Status colours (success, warning, danger) are a
+   separate system and never double as the accent.
+4. **Motion overshoots slightly.** Buttons scale to 0.97 on press; the day
+   selector lifts; the FAB pops in. A spring curve on small interactions is
+   most of what reads as "fun" without adding any decoration.
 
-You asked for all four looks, switchable per person. They are the same component
-set with a different token layer — no component knows which theme is active.
+## Accent seeds
 
-| Preset | Character | Where it wins |
-|---|---|---|
-| `cyan_hud` | Near-black, cyan-teal accent, grid overlay, scanline | Default. Dense schedule screens, reads like control software |
-| `amber_industrial` | Warm dark, amber accent, hazard striping | Workshop/lab feel; easier on eyes in a dark room |
-| `campus` | Soft neutral, blue accent, rounder, more air | Daytime, projectors, showing a dosen |
-| `blueprint` | Paper background, schematic blue, technical annotation | Distinctive; good for printing and portfolio screenshots |
-
-Each ships light and dark. `theme_mode = 'system'` follows the OS.
-
-Stored on `profiles.theme_preset` / `theme_mode` / `accent_override`, so the
-choice follows the student to any device — not in `localStorage`.
-
-### Switching mechanism
-
-Two attributes on `<html>`, nothing more:
+The student picks one of six. Every token follows.
 
 ```html
-<html data-theme="cyan_hud" data-mode="dark">
+<html data-seed="indigo" data-mode="light">
 ```
 
-```css
-:root[data-theme="amber_industrial"][data-mode="dark"] { --accent: #f59e0b; … }
-```
+Values were **derived numerically, not picked by eye** — each seed was darkened
+toward black (light mode) or lightened toward white (dark mode) until it met a
+threshold:
 
-No re-render, no flash, no JS beyond setting the attribute. The server renders
-the correct attributes from the user's profile on first paint, so there is no
-theme flicker on load.
+| Seed | Light accent | vs surface | white on it | Dark accent | vs surface |
+|---|---|---|---|---|---|
+| Indigo | `#5b5bd6` | 5.25 | 5.37 | `#8b8be2` | 6.07 |
+| Blue | `#1971e3` | 4.55 | 4.65 | `#5195ee` | 6.07 |
+| Green | `#1c853a` | 4.60 | 4.70 | `#4ba565` | 6.06 |
+| Amber | `#ba5a08` | 4.51 | 4.61 | `#e8720c` | 6.03 |
+| Pink | `#ce3a75` | 4.58 | 4.68 | `#e26c9b` | 6.04 |
+| Teal | `#008476` | 4.50 | 4.60 | `#38a398` | 6.05 |
+
+Every accent clears **4.5:1** as text on its own surface and as button text in
+light mode, and **6:1** in dark mode. Neutrals clear comfortably: body text
+16.77:1 light and 14.46:1 dark; secondary text 8.58:1 and 10.77:1.
+
+This matters because an accent colour is a *user* choice. A picker that lets
+someone select an unreadable combination is a bug, not a feature — so the picker
+only offers values that were checked first.
 
 ## Tokens
 
-Every colour is a variable. Components never contain a literal hex value.
-
 ```css
---bg            page background
---bg-elev       raised surface (header, nav)
---panel         card surface
---panel-2       nested surface
---border        hairline rule
---border-strong emphasised rule
---text          body text
---text-dim      secondary text
---text-faint    decorative / large-type only
---accent        the live state colour
---accent-fg     text on an accent fill
---ok --warn --danger
---grid          grid-overlay line colour
---radius --radius-sm --gap --shadow
---font-sans --font-mono
+--surface  --surface-dim  --surface-container  --surface-high  --surface-card
+--on-surface  --on-surface-variant  --outline
+--primary  --on-primary  --primary-container  --on-primary-container
+--success --warning --danger --info   (each with a -bg companion)
+--subj-1 … --subj-6                   (subject identity, dots and rails only)
+--e1 --e2 --e3                        (elevation)
+--r-xs … --r-full                     (shape)
+--sp-1 … --sp-8                       (spacing)
+--font-display --font-sans --font-mono
+--ease --ease-bounce --dur-fast --dur --dur-slow
 ```
 
-### Measured contrast
-
-Computed, not estimated. Ratios against the surface the token is used on:
-
-| Preset / mode | text/bg | text/panel | dim/panel | accent/panel | ok | warn | danger |
-|---|---|---|---|---|---|---|---|
-| cyan_hud / dark | 17.35 | 16.29 | 7.41 | 10.42 | 9.80 | 11.28 | 6.81 |
-| cyan_hud / light | 16.30 | 17.72 | 6.26 | 5.36 | 5.48 | 4.92 | 6.47 |
-| amber / dark | 17.07 | 16.05 | 6.95 | 8.75 | 6.09 | 11.26 | 5.00 |
-| amber / light | 16.91 | 18.21 | 6.92 | 5.02 | 4.99 | 4.92 | 6.47 |
-| campus / light | 16.78 | 17.85 | 7.53 | 5.17 | 3.77 | 3.19 | 4.83 |
-| campus / dark | 16.00 | 14.48 | 7.00 | 6.74 | 8.91 | 10.26 | 6.19 |
-| blueprint / light | 14.74 | 16.43 | 6.79 | 6.41 | 5.24 | 4.71 | 6.18 |
-| blueprint / dark | 15.45 | 14.36 | 6.74 | 7.11 | 9.41 | 10.83 | 6.54 |
-
-All body and secondary text clears **WCAG AA 4.5:1**; all status and accent
-colours clear **3:1** for non-text and large-text use.
-
-`--text-faint` ranges 3.75–4.76:1 and is therefore restricted to decorative use
-and type ≥ 18px — it must never carry body copy. The constraint is written here
-because it is the one a future contributor will otherwise break.
-
-### Accent override
-
-`profiles.accent_override` replaces `--accent` with a student's chosen hex. The
-picker offers a curated set that is contrast-safe against every preset's panel
-colour, because a free colour wheel will produce `#ffff00` on white within a day.
+`app.css` contains **no literal colour**. That constraint is what lets twelve
+palettes work from one stylesheet; a hex value in a component rule will look
+wrong in at least half of them.
 
 ## Typography
 
-| Use | Family | Size / weight |
+| Role | Face | Use |
 |---|---|---|
-| Body, names, chat | `Inter`, system sans | 15px / 400, 1.55 line-height |
-| Data: NIM, times, rooms, countdowns, class codes | `JetBrains Mono`, `ui-monospace` | 13px / 500, `font-variant-numeric: tabular-nums` |
-| Section labels | mono, uppercase | 11px / 600, `letter-spacing: .14em` |
-| Headings | sans | 20–28px / 600, `letter-spacing: -0.01em` |
+| Display | **Outfit** 500–700 | Headings, metric numbers, brand, avatars |
+| UI | **Plus Jakarta Sans** 400–700 | Everything read as language |
+| Data | **DM Mono** 400–500 | Times, countdowns, NIM — nothing else |
 
-`tabular-nums` on every countdown and time is not a detail: without it the digits
-change width as they tick and the whole row jitters.
+Outfit is geometric and slightly rounded, which carries the friendliness without
+a novelty face. Plus Jakarta Sans is warm and holds up at 12–13px on a phone.
+Monospace is now confined to digits that must align; the old design used it for
+labels, which is precisely what made it feel like a readout.
+
+`font-variant-numeric: tabular-nums` on every countdown and statistic. Without
+it the digits change width as they tick and the row jitters.
 
 ## Layout
 
-Mobile-first, because that is where the reads happen.
-
 ```
- < 640px   single column · bottom tab bar (5 items) · 16px gutters
- ≥ 640px   two columns where content allows
- ≥ 1024px  persistent left sidebar · wide schedule grid · 1280px max content
+ < 640px   single column · bottom navigation with a pill indicator · FAB
+ ≥ 820px   two columns where content allows
+ ≥ 1024px  persistent navigation rail · full week grid · 1240px max
 ```
 
-The timetable is the only genuinely hard responsive problem. A 7-day × 12-hour
-grid cannot shrink to 360px honestly, so it changes form rather than scaling:
+The timetable still changes form rather than scaling — agenda on a phone,
+scrollable grid on a tablet, full week on desktop. A 7×12 grid cannot shrink to
+360px honestly.
 
-| Width | Schedule form |
-|---|---|
-| Phone | Vertical agenda list, one day at a time, swipe between days |
-| Tablet | Horizontally scrollable 5-day grid with a sticky time column |
-| Desktop | Full week grid |
-
-Trying to render the same grid at every width is what makes most campus apps
-unusable on a phone.
+Grid children use `align-items: start` so a short panel does not stretch to its
+neighbour's height, and every flex or grid child that holds text carries
+`min-width: 0`.
 
 ## Motion
 
-| Element | Motion | Duration | Why |
-|---|---|---|---|
-| Page transition | fade + 4px rise | 180ms | Orientation |
-| Panel mount | fade + 8px rise, 40ms stagger | 220ms | Suggests reading order |
-| Status LED | opacity pulse | 2s loop | Something is live |
-| Countdown | digit flip, 1s tick | — | Time is actually passing |
-| Urgent deadline (< 6h) | border pulse on the accent | 1.6s loop | Earns attention |
-| Scanline (HUD presets) | 8s vertical sweep, 3% opacity | 8s loop | Theme character, nearly subliminal |
-| Grid overlay | static | — | Texture, never animated |
-| Toast | slide from bottom | 240ms | Non-blocking |
-| Tab switch | accent underline slides | 200ms | Continuity |
+| Element | Motion | Duration |
+|---|---|---|
+| Panel mount | fade + 10px rise, 40ms stagger | 380ms |
+| Button press | scale 0.97 | 120ms |
+| FAB entry | scale 0.8 → 1 with overshoot | 380ms |
+| Day selector | lift 2px + elevation on select | 220ms |
+| Checkbox | fill + scale 1.06 | 220ms bounce |
+| Live dot | opacity + scale breathe | 2.4s loop |
+| Toast | rise 18px + scale 0.96 | 380ms bounce |
+| Bottom sheet | rise 26px | 380ms |
 
-Easing is `cubic-bezier(.22,.61,.36,1)` for entrances and `linear` for anything
-representing continuous time.
+Easing is `cubic-bezier(.2,0,0,1)` for entrances and
+`cubic-bezier(.34,1.4,.64,1)` where a small overshoot helps.
 
-### Reduced motion is honoured properly
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-  }
-}
-```
-
-Plus a `reduce_motion` flag on the profile, because some students want it off
-while their OS setting stays on. The scanline and all looping pulses are
-suppressed entirely — not merely shortened, since an infinite loop shortened to
-0.01ms is a strobe.
+Reduced motion is honoured through both `prefers-reduced-motion` and a manual
+toggle, since some students want it off while their OS setting stays on.
+Looping animations are suppressed entirely rather than shortened — an infinite
+loop compressed to 0.01ms is a strobe.
 
 ## Components
 
-Primitives (theme-agnostic, no literal colours):
-
 ```
-Panel          bordered surface, optional mono label in the top rule
-StatusLED      ●  ok / warn / danger / idle, optional pulse
-Countdown      mono, tabular, ticks live, switches to danger under 6h
-Chip           skill tag, role badge, subject pill
-DataRow        label left (mono, dim) · value right (mono, bright)
-SectionLabel   uppercase mono rule
-Avatar         image, initials fallback, optional role ring
-EmptyState     icon + one line + one action
-ThemePicker    4 preset swatches × mode toggle × accent row
+Panel · Chip · StatusDot · Countdown · DataRow · Avatar · Bar · EmptyState
+Button (filled / tonal / ghost) · FAB · Segmented · SeedPicker · Switch row
+NavRail · BottomNav · BottomSheet · Toast
+ScheduleSlot · WeekGrid · DayStrip · TaskCard · OrgNode
+RoomList · MessageBubble · Composer · BadgeShelf · SkillCloud · ProjectCard
 ```
 
-Feature components:
+Each schedule subject keeps the same `--subj-*` colour everywhere, so a week
+reads by colour before it is read by text.
 
-```
-ScheduleGrid / AgendaList     TaskCard        TaskComposer
-OrgTree                       RoleBadge       ApprovalQueue
-RoomList / MessageList        MessageComposer
-ProfileHeader                 SkillCloud      ProjectCard
-BadgeShelf                    StreakMeter     NotifPrefsForm
-```
+## Accessibility
 
-## Iconography
-
-One stroke-icon set (Lucide), 1.5px stroke, 20px default, `currentColor` only —
-never a hardcoded colour, or icons break under theme switching.
-
-## Accessibility checklist
-
-- [x] 4.5:1 on all body and secondary text, every preset and mode (measured above)
-- [x] `prefers-reduced-motion` respected, loops suppressed not shortened
-- [x] Focus ring: 2px accent + 2px offset, never removed
-- [ ] Keyboard navigable throughout — Phase 1
+- [x] Accent seeds verified ≥ 4.5:1 light and ≥ 6:1 dark, all six (table above)
+- [x] Neutrals verified in both modes
+- [x] `prefers-reduced-motion` honoured, loops suppressed not shortened
+- [x] Focus ring: 2px accent, 2px offset, never removed
+- [x] No horizontal page scroll at 1280 / 390 / 320px, all 8 screens
+- [x] Status carries a text label, not colour alone
+- [ ] Full keyboard navigation — Phase 1
 - [ ] Screen-reader labels on every icon-only control — Phase 1
-- [ ] Status never conveyed by colour alone (LEDs carry a text label too) — partial in mockup
-- [ ] 44×44px minimum touch targets — Phase 1
-- [ ] Indonesian `lang` attribute, switching with locale — Phase 1
+- [ ] 44×44px touch targets audited — Phase 1 (nav and FAB already clear it)
 
-Unchecked items are honest: they are Phase 1 implementation work, not claims
-about the mockup.
+Unchecked items are implementation work, not claims about the prototype.
+
+## Verification
+
+`mockup/tests/check.mjs` drives the prototype in Chromium and asserts that all
+8 screens render, the countdown ticks, interactions change state, **all 12 seed ×
+mode combinations produce distinct palettes**, `mode: system` resolves to a
+concrete value rather than leaking through to the tokens, and no screen leaks
+horizontal page scroll at 390px or 320px.
+
+It has caught five real layout bugs so far, including two in this redesign: the
+settings segmented control overflowing by 10px at 380px and 50px at 320px, and
+an invisible selection ring on the accent picker (white on white, because the
+rule used `currentColor`).

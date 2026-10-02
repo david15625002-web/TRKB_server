@@ -13,7 +13,7 @@ Four layers, increasing in cost to build and in value to the program.
 | `headline` | One line under the name — *"Suka bikin robot line follower"* |
 | `bio` | ≤ 500 chars |
 | `links` | `jsonb` array of `{label, url}` — GitHub, LinkedIn, Instagram |
-| `theme_preset`, `theme_mode`, `accent_override` | Stored **server-side**, so the look follows you to any device |
+| `accent`, `theme_mode` | One of six accent colours, plus light/dark/system. Stored **server-side**, so the look follows you to any device |
 | `locale` | `id` / `en` |
 | `reduce_motion` | Respects the OS setting but can be forced on |
 

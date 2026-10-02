@@ -86,23 +86,33 @@ await page.press('#msgin', 'Enter');
 await page.waitForTimeout(240);
 console.log(`  chat send: ${m1} -> ${await page.$$eval('.msg', e=>e.length)}`);
 
-// theme switching actually changes computed colours
+// Every accent seed x mode must produce a genuinely distinct palette.
+const SEEDS = ['indigo','blue','green','amber','pink','teal'];
 const seen = new Set();
-for (const t of ['cyan_hud','amber_industrial','campus','blueprint']) {
-  for (const mo of ['dark','light']) {
-    await page.evaluate(([t,mo]) => { S.tema=t; S.mode=mo; S.laman='beranda'; applyTheme(); render(); }, [t,mo]);
-    await page.waitForTimeout(300);
+for (const sd of SEEDS) {
+  for (const mo of ['light','dark']) {
+    await page.evaluate(([sd,mo]) => { S.seed=sd; S.mode=mo; S.laman='beranda'; applyTheme(); render(); }, [sd,mo]);
+    await page.waitForTimeout(260);
     const c = await page.evaluate(() => {
-      const s = getComputedStyle(document.body);
       const r = getComputedStyle(document.documentElement);
-      return s.backgroundColor + '|' + r.getPropertyValue('--accent').trim();
+      return getComputedStyle(document.body).backgroundColor + '|'
+           + r.getPropertyValue('--primary').trim() + '|'
+           + r.getPropertyValue('--primary-container').trim();
     });
     seen.add(c);
-    await page.screenshot({ path: `${OUT}/${t}-${mo}.png` });
+    if (mo === 'light') await page.screenshot({ path: `${OUT}/seed-${sd}.png` });
   }
 }
-console.log(`  themes: 8 combinations produced ${seen.size} distinct bg+accent pairs`);
-if (seen.size < 8) errors.push(`themes not distinct: only ${seen.size}/8`);
+const want = SEEDS.length * 2;
+console.log(`  accents: ${want} seed x mode combinations produced ${seen.size} distinct palettes`);
+if (seen.size < want) errors.push(`palettes not distinct: only ${seen.size}/${want}`);
+
+// 'system' must resolve to a concrete mode, never leak through to the tokens.
+await page.evaluate(() => { S.mode='system'; applyTheme(); });
+const resolved = await page.evaluate(() => document.documentElement.getAttribute('data-mode'));
+console.log(`  mode "system" resolves to: ${resolved}`);
+if (!['light','dark'].includes(resolved)) errors.push(`system mode leaked "${resolved}" into data-mode`);
+await page.evaluate(() => { S.seed='indigo'; S.mode='light'; applyTheme(); render(); });
 
 // phone overflow
 await page.setViewportSize({ width: 360, height: 760 });

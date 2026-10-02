@@ -64,9 +64,12 @@ create type notification_channel as enum ('inapp', 'push', 'email');
 
 create type job_state as enum ('queued', 'sending', 'sent', 'failed', 'cancelled', 'suppressed');
 
-create type theme_preset as enum ('cyan_hud', 'amber_industrial', 'campus', 'blueprint');
+-- Accent colour the student picks; every UI token follows it. Values match
+-- the seeds in mockup/assets/css/tokens.css, each contrast-checked in both
+-- modes (see docs/08).
+create type accent_seed as enum ('indigo', 'blue', 'green', 'amber', 'pink', 'teal');
 
-create type theme_mode as enum ('dark', 'light', 'system');
+create type theme_mode as enum ('light', 'dark', 'system');
 
 -- ============================================================================
 --  SECTION 2 · SHARED HELPERS
@@ -270,9 +273,8 @@ create table profiles (
   links             jsonb not null default '[]'::jsonb,  -- [{label,url}]
 
   -- Per-person theming, stored server-side so it follows across devices
-  theme_preset      theme_preset not null default 'cyan_hud',
-  theme_mode        theme_mode   not null default 'dark',
-  accent_override   text,           -- optional hex, overrides the preset accent
+  accent            accent_seed not null default 'indigo',
+  theme_mode        theme_mode  not null default 'system',
   locale            text not null default 'id',
   reduce_motion     boolean not null default false,
 
@@ -294,8 +296,6 @@ create table profiles (
   constraint profiles_bio_length check (bio is null or length(bio) <= 500),
   constraint profiles_headline_length check (headline is null or length(headline) <= 100),
   constraint profiles_links_is_array check (jsonb_typeof(links) = 'array'),
-  constraint profiles_accent_hex
-    check (accent_override is null or accent_override ~* '^#[0-9a-f]{6}$'),
   constraint profiles_locale check (locale in ('id', 'en'))
 );
 

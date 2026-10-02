@@ -25,9 +25,9 @@ supabase.from('task_submissions')
 // Send a message — RLS calls can_post_in_room()
 supabase.from('chat_messages').insert({ room_id, author_id: me, body });
 
-// Update your own theme
+// Update your own appearance
 supabase.from('profiles')
-  .update({ theme_preset: 'blueprint', theme_mode: 'light' }).eq('id', me);
+  .update({ accent: 'teal', theme_mode: 'system' }).eq('id', me);
 ```
 
 ## RPCs (in-database functions)

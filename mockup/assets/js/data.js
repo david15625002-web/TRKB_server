@@ -166,12 +166,14 @@ const DATA = {
     { ic: '🔥', j: 'Runtun 12 hari', b: 'Dua belas hari tanpa tugas terlambat.', w: '2 hari lalu', baru: false },
   ],
 
-  temaList: [
-    { id: 'cyan_hud',         nama: 'Cyan HUD',    warna: ['#05080c', '#0b1219', '#22d3ee'] },
-    { id: 'amber_industrial', nama: 'Amber Ind.',  warna: ['#0a0806', '#15110b', '#f59e0b'] },
-    { id: 'campus',           nama: 'Campus',      warna: ['#f6f8fb', '#ffffff', '#2563eb'] },
-    { id: 'blueprint',        nama: 'Blueprint',   warna: ['#e9eef5', '#f8fafc', '#1d4ed8'] },
+  // Accent seeds. Hex here is only the swatch in the picker; the real tokens
+  // live in tokens.css, where each seed has tuned light and dark values.
+  seeds: [
+    { id: 'indigo', nama: 'Indigo', hex: '#5b5bd6' },
+    { id: 'blue',   nama: 'Biru',   hex: '#1971e3' },
+    { id: 'green',  nama: 'Hijau',  hex: '#1c853a' },
+    { id: 'amber',  nama: 'Jingga', hex: '#ba5a08' },
+    { id: 'pink',   nama: 'Merah muda', hex: '#ce3a75' },
+    { id: 'teal',   nama: 'Tosca',  hex: '#008476' },
   ],
-
-  aksen: ['#22d3ee', '#34d399', '#f59e0b', '#f472b6', '#a78bfa', '#60a5fa'],
 };
