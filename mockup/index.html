@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="id" data-theme="cyan_hud" data-mode="dark" data-motion="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TRKB · Sistem Informasi Mahasiswa</title>
+<meta name="description" content="Prototipe antarmuka: jadwal, tugas, struktur organisasi, profil, dan obrolan untuk program studi Teknik Robotika dan Kecerdasan Buatan UNIKOM.">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="glyph">TR</span>
+      <span>TRKB<small>Teknik Robotika &amp; KA · UNIKOM</small></span>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" data-go="notifikasi" aria-label="Notifikasi">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 5 2 6.5 2 6.5H4.5s2-1.5 2-6.5z"/><path d="M10 19.5a2 2 0 0 0 4 0"/>
+      </svg>
+      <span class="dot"></span>
+    </button>
+    <button class="iconbtn" data-go="pengaturan" aria-label="Tema dan pengaturan">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none"/>
+      </svg>
+    </button>
+    <button class="iconbtn" data-go="profil" aria-label="Profil" style="border-color:var(--accent);color:var(--accent)">
+      <span class="mono" style="font-size:12px;font-weight:600">N</span>
+    </button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <nav id="sidenav" aria-label="Navigasi utama"></nav>
+      <div class="sep"></div>
+      <div class="panel" style="padding:11px">
+        <div class="label" style="margin-bottom:6px">Prototipe desain</div>
+        <p class="note" style="margin:0;font-size:11.5px">
+          Data contoh, status tersimpan di memori. Lihat
+          <span class="mono">docs/</span> untuk rancangan lengkap.
+        </p>
+      </div>
+    </aside>
+
+    <main id="view" aria-live="polite"></main>
+  </div>
+
+  <nav class="tabbar" id="tabbar" aria-label="Navigasi"></nav>
+</div>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+<div id="modal"></div>
+
+<noscript>
+  <div style="padding:24px;max-width:40em;margin:0 auto">
+    <h1>TRKB · Prototipe</h1>
+    <p>Prototipe ini membutuhkan JavaScript untuk berpindah layar dan mengganti tema.
+    Rancangan lengkap tersedia sebagai dokumen di folder <code>docs/</code>.</p>
+  </div>
+</noscript>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
