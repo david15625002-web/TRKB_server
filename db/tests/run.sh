@@ -25,22 +25,38 @@ DB="$HERE/.."
 
 export PATH="$PGBIN:$PATH"
 
-cleanup() { pg_ctl -D "$WORK/data" stop -m immediate >/dev/null 2>&1 || true; }
+cleanup() { $AS_PG "export PATH='$PGBIN:\$PATH'; pg_ctl -D '$WORK/data' stop -m immediate" >/dev/null 2>&1 || true; }
 trap cleanup EXIT
+
+# initdb and postgres refuse to run as root. When invoked as root (containers,
+# CI images) re-exec the cluster commands as the `postgres` system user.
+if [ "$(id -u)" -eq 0 ]; then
+  if ! id -u postgres >/dev/null 2>&1; then
+    echo "running as root and no 'postgres' user exists - run this as a normal user" >&2
+    exit 1
+  fi
+  AS_PG="su postgres -c"
+  echo "==> running as root; cluster commands will run as the postgres user"
+else
+  AS_PG="bash -c"
+fi
+run_pg() { $AS_PG "export PATH='$PGBIN:\$PATH'; $1"; }
 
 echo "==> provisioning a throwaway cluster in $WORK"
 rm -rf "$WORK"; mkdir -p "$WORK"
-initdb -D "$WORK/data" --auth=trust >/dev/null
-pg_ctl -D "$WORK/data" -l "$WORK/log" -o "-p $PORT -k $WORK" start >/dev/null
+[ "$(id -u)" -eq 0 ] && chown -R postgres "$WORK"
+run_pg "initdb -D '$WORK/data' --auth=trust" >/dev/null
+run_pg "pg_ctl -D '$WORK/data' -l '$WORK/log' -o '-p $PORT -k $WORK' start" >/dev/null
 sleep 1
 
-PSQL="psql -h $WORK -p $PORT -d trkb -v ON_ERROR_STOP=1 -q"
-psql -h "$WORK" -p "$PORT" -d postgres -c 'create database trkb;' >/dev/null
+run_pg "psql -h '$WORK' -p $PORT -d postgres -c 'create database trkb;'" >/dev/null
 
 echo "==> applying shim + schema + policies + seed"
 for f in "$HERE/00-supabase-shim.sql" "$DB/schema.sql" "$DB/policies.sql" "$DB/seed.sql"; do
   printf '    %-24s' "$(basename "$f")"
-  if $PSQL -f "$f" >"$WORK/$(basename "$f").out" 2>&1; then
+  cp "$f" "$WORK/"; [ "$(id -u)" -eq 0 ] && chown postgres "$WORK/$(basename "$f")"
+  if run_pg "psql -h '$WORK' -p $PORT -d trkb -v ON_ERROR_STOP=1 -q -f '$WORK/$(basename "$f")'" \
+       >"$WORK/$(basename "$f").out" 2>&1; then
     echo "ok"
   else
     echo "FAILED"; tail -20 "$WORK/$(basename "$f").out"; exit 1
@@ -51,13 +67,16 @@ echo "==> running behavioural tests"
 FAILED=0
 for f in "$HERE"/0[123]-*.sql; do
   echo "--- $(basename "$f") ---"
-  psql -h "$WORK" -p "$PORT" -d trkb -f "$f" 2>&1 \
-    | grep -Ev '^(SET|RESET|GRANT|INSERT|UPDATE|DELETE|DO|Pager)' || true
+  cp "$f" "$WORK/"; [ "$(id -u)" -eq 0 ] && chown postgres "$WORK/$(basename "$f")"
+  run_pg "psql -h '$WORK' -p $PORT -d trkb -f '$WORK/$(basename "$f")'" \
+    >"$WORK/$(basename "$f").run" 2>&1 || true
+  grep -Ev '^(SET|RESET|GRANT|INSERT|UPDATE|DELETE|DO|Pager)' "$WORK/$(basename "$f").run" || true
+  grep -c 'ERROR' "$WORK/$(basename "$f").run" | grep -qv '^0$' && { echo "!! SQL ERROR in $(basename "$f")"; FAILED=1; } || true
 done
 
 # Any NOTICE containing FAIL means a behavioural assertion did not hold.
 for f in "$HERE"/0[123]-*.sql; do
-  if psql -h "$WORK" -p "$PORT" -d trkb -f "$f" 2>&1 | grep -q 'FAIL'; then
+  if grep -q 'FAIL' "$WORK/$(basename "$f").run" 2>/dev/null; then
     echo "!! assertion failure in $(basename "$f")"; FAILED=1
   fi
 done
