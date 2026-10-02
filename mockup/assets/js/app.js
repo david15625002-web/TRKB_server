@@ -34,7 +34,7 @@ const S = {
   laman: 'beranda',
   hari: new Date().getDay() === 0 || new Date().getDay() === 6 ? 0 : new Date().getDay() - 1,
   ruang: 'r1',
-  seed: 'indigo',
+  seed: 'green',
   mode: (typeof matchMedia === 'function'
          && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
   gerak: true,
@@ -142,10 +142,19 @@ function pBeranda() {
       </div>
     </div>
 
+    <div class="streakbar enter">
+      <span class="fire">🔥</span>
+      <div style="min-width:0;flex:1">
+        <div class="n">${st.streak} hari beruntun!</div>
+        <div class="bar" style="margin-top:7px"><i style="width:${Math.min(100, st.streak / 30 * 100)}%"></i></div>
+      </div>
+      <div class="note" style="font-weight:800">30</div>
+    </div>
+
     <div class="metrics enter">
-      <div class="metric"><div class="n" style="color:var(--primary)">${aktif.length}</div><div class="t">Tugas aktif</div></div>
-      <div class="metric"><div class="n" style="color:var(--success)">${st.tepat}</div><div class="t">Tepat waktu</div></div>
-      <div class="metric"><div class="n" style="color:var(--warning)">${st.streak}</div><div class="t">Hari beruntun</div></div>
+      <div class="metric"><div class="n" style="color:var(--accent-text)">${aktif.length}</div><div class="t">Tugas aktif</div></div>
+      <div class="metric"><div class="n" style="color:var(--success-text)">${st.tepat}</div><div class="t">Tepat waktu</div></div>
+      <div class="metric"><div class="n" style="color:var(--streak)">${st.streak}</div><div class="t">Hari beruntun</div></div>
       <div class="metric"><div class="n">${hariIni.length}</div><div class="t">Kelas hari ini</div></div>
     </div>
 
@@ -178,7 +187,7 @@ function pBeranda() {
     </div>
 
     ${DATA.menunggu.length ? `
-    <section class="panel enter" style="border-color:var(--warning)">
+    <section class="panel enter" style="border-color:var(--warn-text)">
       <header>
         <span class="led warn"><i></i></span>
         <h2>Menunggu persetujuanmu</h2>
@@ -282,7 +291,7 @@ function pJadwal() {
           <button class="btn ghost" data-act="demo">Tempel dari papan klip</button>
         </div>
         <div class="sep"></div>
-        <div class="drow"><span class="k">Bentrok terdeteksi</span><span class="v" style="color:var(--success)">0</span></div>
+        <div class="drow"><span class="k">Bentrok terdeteksi</span><span class="v" style="color:var(--success-text)">0</span></div>
         <div class="drow"><span class="k">Pertemuan dibuat</span><span class="v">135</span></div>
         <div class="drow"><span class="k">Pekan dilewati</span><span class="v">UTS · Libur</span></div>
       </div>
@@ -406,10 +415,10 @@ function pOrganisasi() {
         <p class="note">Peran diberikan <b>pada sebuah unit</b> dan berlaku untuk unit itu
         beserta seluruh turunannya.</p>
         <div class="sep"></div>
-        <div class="drow"><span class="k">Ketua HIMA → semua kelas</span><span class="v" style="color:var(--success)">diizinkan</span></div>
-        <div class="drow"><span class="k">Ketua Kelas TRKB-1 25 → TRKB-1 25</span><span class="v" style="color:var(--success)">diizinkan</span></div>
-        <div class="drow"><span class="k">Ketua Kelas TRKB-1 25 → TRKB-2 25</span><span class="v" style="color:var(--danger)">ditolak</span></div>
-        <div class="drow"><span class="k">Anggota → membuat tugas</span><span class="v" style="color:var(--danger)">ditolak</span></div>
+        <div class="drow"><span class="k">Ketua HIMA → semua kelas</span><span class="v" style="color:var(--success-text)">diizinkan</span></div>
+        <div class="drow"><span class="k">Ketua Kelas TRKB-1 25 → TRKB-1 25</span><span class="v" style="color:var(--success-text)">diizinkan</span></div>
+        <div class="drow"><span class="k">Ketua Kelas TRKB-1 25 → TRKB-2 25</span><span class="v" style="color:var(--danger-text)">ditolak</span></div>
+        <div class="drow"><span class="k">Anggota → membuat tugas</span><span class="v" style="color:var(--danger-text)">ditolak</span></div>
       </div>
     </section>
   </div>`;
@@ -490,7 +499,7 @@ function pProfil() {
         <div class="avatar lg ring">${esc(m.inisial)}</div>
         <div style="flex:1;min-width:0;padding-bottom:6px">
           <h2>${esc(m.display)}</h2>
-          <div class="mono" style="font-size:12px;color:var(--on-surface-variant)">
+          <div class="mono" style="font-size:12px;color:var(--muted)">
             ${esc(m.nim)} · ${esc(m.kelas)} · Semester ${m.semester}
           </div>
         </div>
@@ -512,14 +521,14 @@ function pProfil() {
         <header><h2>Statistik</h2></header>
         <div class="body">
           <div class="row" style="justify-content:space-between;margin-bottom:6px">
-            <span class="note">Ketepatan waktu</span><span class="mono" style="color:var(--success)">${pct}%</span>
+            <span class="note">Ketepatan waktu</span><span class="mono" style="color:var(--success-text)">${pct}%</span>
           </div>
           <div class="bar"><i style="width:${pct}%"></i></div>
           <div class="sep"></div>
           <div class="drow"><span class="k">Tugas selesai</span><span class="v">${st.selesai}</span></div>
-          <div class="drow"><span class="k">Tepat waktu</span><span class="v" style="color:var(--success)">${st.tepat}</span></div>
-          <div class="drow"><span class="k">Terlambat</span><span class="v" style="color:var(--danger)">${st.telat}</span></div>
-          <div class="drow"><span class="k">Runtun saat ini</span><span class="v" style="color:var(--warning)">${st.streak} hari</span></div>
+          <div class="drow"><span class="k">Tepat waktu</span><span class="v" style="color:var(--success-text)">${st.tepat}</span></div>
+          <div class="drow"><span class="k">Terlambat</span><span class="v" style="color:var(--danger-text)">${st.telat}</span></div>
+          <div class="drow"><span class="k">Runtun saat ini</span><span class="v" style="color:var(--warn-text)">${st.streak} hari</span></div>
           <div class="drow"><span class="k">Runtun terbaik</span><span class="v">${st.streakBest} hari</span></div>
           <p class="note" style="margin-top:10px">Tidak ada papan peringkat publik — angka ini hanya milikmu.</p>
         </div>
@@ -563,7 +572,7 @@ function pProfil() {
               <div class="cv">${esc(p.judul)}</div>
               <div class="pb">
                 <div style="font-weight:600">${esc(p.judul)}</div>
-                <div class="mono" style="font-size:11px;color:var(--on-surface-variant);margin:2px 0 6px">
+                <div class="mono" style="font-size:11px;color:var(--muted);margin:2px 0 6px">
                   ${esc(p.konteks)} · ${p.tahun} · ${p.tim} orang</div>
                 <p class="note">${esc(p.ringkas)}</p>
                 <div class="row" style="margin-top:8px">
@@ -588,11 +597,13 @@ function pPengaturan() {
         <p class="note" style="margin-bottom:14px">Pilih satu warna. Seluruh aplikasi mengikutinya.</p>
         <div class="seeds">
           ${DATA.seeds.map(w => `
-            <button class="seedbtn" style="background:${w.hex}" aria-pressed="${S.seed === w.id}"
-                    data-act="seed" data-id="${w.id}" aria-label="${esc(w.nama)}">
-              ${svg('check', 20)}
+            <button class="seedbtn" aria-pressed="${S.seed === w.id}"
+                    data-act="seed" data-id="${w.id}" aria-label="${esc(w.nama)}"
+                    style="background:${w.hex};color:${w.ink};box-shadow:0 4px 0 ${w.deep};border-color:${w.deep}">
+              ${svg('check', 22)}
             </button>`).join('')}
         </div>
+        <p class="note" style="margin-top:10px">${DATA.seeds.find(w => w.id === S.seed).nama}</p>
         <div class="sep"></div>
         <div class="switchrow">
           <div><div style="font-weight:600">Tampilan</div>
@@ -628,8 +639,8 @@ function pPengaturan() {
               <option>Tidak ada</option></select></label>
         </div>
         <div class="sep"></div>
-        <div class="drow"><span class="k">Dalam aplikasi</span><span class="v" style="color:var(--success)">Aktif</span></div>
-        <div class="drow"><span class="k">Push ke ponsel</span><span class="v" style="color:var(--success)">Aktif</span></div>
+        <div class="drow"><span class="k">Dalam aplikasi</span><span class="v" style="color:var(--success-text)">Aktif</span></div>
+        <div class="drow"><span class="k">Push ke ponsel</span><span class="v" style="color:var(--success-text)">Aktif</span></div>
         <div class="drow"><span class="k">Email</span><span class="v">Ringkasan harian</span></div>
         <p class="note" style="margin-top:12px">Email dibatasi ringkasan harian karena kuota gratis
         3.000 kiriman per bulan tidak cukup untuk notifikasi per kejadian.</p>
@@ -659,14 +670,14 @@ function pNotifikasi() {
       <button class="btn sm ghost" data-act="demo">Tandai semua dibaca</button></header>
     <div class="body flush">
       ${DATA.notifikasi.map(n => `
-        <div class="room" style="cursor:default;${n.baru ? 'background:var(--primary-container)' : ''}">
+        <div class="room" style="cursor:default;${n.baru ? 'background:var(--accent-soft)' : ''}">
           <div class="avatar sm" style="font-size:15px">${n.ic}</div>
           <div style="min-width:0;flex:1">
             <div class="rn">${esc(n.j)}</div>
             <div class="rp">${esc(n.b)}</div>
           </div>
           <div style="text-align:right">
-            <div class="mono" style="font-size:10.5px;color:var(--on-surface-variant)">${esc(n.w)}</div>
+            <div class="mono" style="font-size:10.5px;color:var(--muted)">${esc(n.w)}</div>
             ${n.baru ? `<span class="led live" style="justify-content:flex-end"><i></i></span>` : ''}
           </div>
         </div>`).join('')}
@@ -713,7 +724,7 @@ function render() {
 
 function applyTheme() {
   const r = document.documentElement;
-  r.setAttribute('data-seed', S.seed);
+  r.setAttribute('data-accent', S.seed);
   // 'system' resolves now, so the tokens only ever see 'light' or 'dark'.
   const mode = S.mode === 'system'
     ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
@@ -817,7 +828,7 @@ function openModal(kind) {
           <option>Email dosen</option><option>Google Drive</option></select></label>
       <label><span class="label">Keterangan</span><input class="field" placeholder="Opsional"></label>
     </div>
-    <div class="privacy" style="margin:16px 0 0;background:var(--primary-container);color:var(--on-primary-container)">
+    <div class="privacy" style="margin:16px 0 0;background:var(--accent-soft);color:var(--accent-text)">
       <div>Menerbitkan akan menjadwalkan pengingat <b>H-1 pukul 18:00</b> dan
       <b>H-3 jam</b> untuk 38 anggota ${esc(DATA.me.kelas)}, menghormati bisu per mata
       kuliah dan jam tenang masing-masing.</div>
@@ -836,7 +847,7 @@ function openModal(kind) {
       <label><span class="label">Pekan</span>
         <select class="field"><option>1 – 16 (seluruh semester)</option><option>1 – 8</option><option>9 – 16</option></select></label>
     </div>
-    <div class="privacy" style="margin:16px 0 0;background:var(--primary-container);color:var(--on-primary-container)">
+    <div class="privacy" style="margin:16px 0 0;background:var(--accent-soft);color:var(--accent-text)">
       <div>Basis data menolak slot yang bertabrakan dengan jadwal kelas yang sudah ada
       pada hari yang sama, sebelum tersimpan.</div>
     </div>`;

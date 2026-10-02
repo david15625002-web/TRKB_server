@@ -132,7 +132,7 @@ Recorded so they are not reopened:
 | Semester | Derived from angkatan + current term, never stored |
 | Chat | Rooms + DMs, text and images, no E2E in v1, admin access stated plainly |
 | Profiles | Identity + skills + portfolio + gamification, all four layers |
-| Appearance | Soft tonal direction; 6 accent colours × light/dark/system, chosen per person |
+| Appearance | Duolingo design system (nexu-io/open-design); 3 brand accents × light/dark/system, chosen per person |
 | Dosen | Data only, no accounts |
 | Registration | Campus email + NIM, approved by Ketua/Sekretaris Kelas |
 | Reminders | H-1 at 18:00 + H-3h, user-overridable, quiet hours defer |

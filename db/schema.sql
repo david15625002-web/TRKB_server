@@ -64,10 +64,10 @@ create type notification_channel as enum ('inapp', 'push', 'email');
 
 create type job_state as enum ('queued', 'sending', 'sent', 'failed', 'cancelled', 'suppressed');
 
--- Accent colour the student picks; every UI token follows it. Values match
--- the seeds in mockup/assets/css/tokens.css, each contrast-checked in both
--- modes (see docs/08).
-create type accent_seed as enum ('indigo', 'blue', 'green', 'amber', 'pink', 'teal');
+-- Accent colour the student picks; every UI token follows it. The three are
+-- Duolingo brand colours (Owl Green, Eel Blue, Streak Orange), each
+-- contrast-checked in both light and dark (see docs/08).
+create type accent_seed as enum ('green', 'blue', 'orange');
 
 create type theme_mode as enum ('light', 'dark', 'system');
 
@@ -273,7 +273,7 @@ create table profiles (
   links             jsonb not null default '[]'::jsonb,  -- [{label,url}]
 
   -- Per-person theming, stored server-side so it follows across devices
-  accent            accent_seed not null default 'indigo',
+  accent            accent_seed not null default 'green',
   theme_mode        theme_mode  not null default 'system',
   locale            text not null default 'id',
   reduce_motion     boolean not null default false,

@@ -166,14 +166,11 @@ const DATA = {
     { ic: '🔥', j: 'Runtun 12 hari', b: 'Dua belas hari tanpa tugas terlambat.', w: '2 hari lalu', baru: false },
   ],
 
-  // Accent seeds. Hex here is only the swatch in the picker; the real tokens
-  // live in tokens.css, where each seed has tuned light and dark values.
+  // The three brand accents from the Duolingo package. `ink` is the text that
+  // sits ON the fill; white would measure about 2:1 and fail. See docs/08.
   seeds: [
-    { id: 'indigo', nama: 'Indigo', hex: '#5b5bd6' },
-    { id: 'blue',   nama: 'Biru',   hex: '#1971e3' },
-    { id: 'green',  nama: 'Hijau',  hex: '#1c853a' },
-    { id: 'amber',  nama: 'Jingga', hex: '#ba5a08' },
-    { id: 'pink',   nama: 'Merah muda', hex: '#ce3a75' },
-    { id: 'teal',   nama: 'Tosca',  hex: '#008476' },
+    { id: 'green',  nama: 'Owl Green',     hex: '#58cc02', ink: '#225001', deep: '#46a302' },
+    { id: 'blue',   nama: 'Eel Blue',      hex: '#1cb0f6', ink: '#0a3f59', deep: '#1181b8' },
+    { id: 'orange', nama: 'Streak Orange', hex: '#ff9600', ink: '#633a00', deep: '#c27100' },
   ],
 };

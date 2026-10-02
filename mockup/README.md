@@ -11,7 +11,7 @@ python3 -m http.server 8080 --directory mockup
 
 | Works | Notes |
 |---|---|
-| 12 palettes | 6 accent colours × light/dark, switched live in **Pengaturan**; `system` follows the device |
+| 6 palettes | 3 brand accents (Owl Green, Eel Blue, Streak Orange) × light/dark, switched live in **Pengaturan**; `system` follows the device |
 | Navigation | 8 screens, sidebar on desktop, bottom tab bar on phone |
 | Live countdown | Ticks to the next class, computed from the sample jadwal |
 | Task completion | Tick a task, state updates, toast fires, counters recalculate |
@@ -48,13 +48,17 @@ python3 -m http.server 8080 --directory mockup
 
 ```
 index.html              shell, topbar, nav containers
-assets/css/tokens.css   6 accent seeds x 2 modes — every colour lives here
+assets/css/tokens.css   Duolingo tokens, 3 accents x 2 modes — every colour lives here
 assets/css/app.css      components; contains no literal colours
 assets/js/data.js       sample data, mirroring db/seed.sql
 assets/js/app.js        views and interaction
 ```
 
-The split matters: `app.css` referencing only tokens is what makes twelve
-palettes work from one stylesheet. If you add a component, keep that rule — a
-literal hex in `app.css` will look wrong in at least half of the twelve
-combinations.
+The split matters: `app.css` referencing only tokens is what makes six palettes
+work from one stylesheet. If you add a component, keep that rule — a literal hex
+in `app.css` will look wrong in at least half of the six combinations.
+
+The visual language comes from the Duolingo package in
+[nexu-io/open-design](https://github.com/nexu-io/open-design); `docs/08` records
+what was taken verbatim and the four places it deliberately departs (all four
+for contrast reasons).

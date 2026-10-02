@@ -87,7 +87,7 @@ await page.waitForTimeout(240);
 console.log(`  chat send: ${m1} -> ${await page.$$eval('.msg', e=>e.length)}`);
 
 // Every accent seed x mode must produce a genuinely distinct palette.
-const SEEDS = ['indigo','blue','green','amber','pink','teal'];
+const SEEDS = ['green','blue','orange'];   // the Duolingo brand accents
 const seen = new Set();
 for (const sd of SEEDS) {
   for (const mo of ['light','dark']) {
@@ -96,8 +96,8 @@ for (const sd of SEEDS) {
     const c = await page.evaluate(() => {
       const r = getComputedStyle(document.documentElement);
       return getComputedStyle(document.body).backgroundColor + '|'
-           + r.getPropertyValue('--primary').trim() + '|'
-           + r.getPropertyValue('--primary-container').trim();
+           + r.getPropertyValue('--accent').trim() + '|'
+           + r.getPropertyValue('--accent-text').trim();
     });
     seen.add(c);
     if (mo === 'light') await page.screenshot({ path: `${OUT}/seed-${sd}.png` });
@@ -112,12 +112,12 @@ await page.evaluate(() => { S.mode='system'; applyTheme(); });
 const resolved = await page.evaluate(() => document.documentElement.getAttribute('data-mode'));
 console.log(`  mode "system" resolves to: ${resolved}`);
 if (!['light','dark'].includes(resolved)) errors.push(`system mode leaked "${resolved}" into data-mode`);
-await page.evaluate(() => { S.seed='indigo'; S.mode='light'; applyTheme(); render(); });
+await page.evaluate(() => { S.seed='green'; S.mode='light'; applyTheme(); render(); });
 
 // phone overflow
 await page.setViewportSize({ width: 360, height: 760 });
 for (const p of pages) {
-  await page.evaluate(p => { S.tema='cyan_hud'; S.mode='dark'; S.laman=p; applyTheme(); render(); }, p);
+  await page.evaluate(p => { S.seed='green'; S.mode='light'; S.laman=p; applyTheme(); render(); }, p);
   await page.waitForTimeout(200);
   const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   console.log(`  phone/${p.padEnd(11)} overflow ${over}px ${over>2?'<-- PROBLEM':'ok'}`);

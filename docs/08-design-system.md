@@ -1,176 +1,162 @@
 # 08 · Design System
 
-Working implementation: [`mockup/assets/css/tokens.css`](../mockup/assets/css/tokens.css)
+**Source: the Duolingo package from [`nexu-io/open-design`](https://github.com/nexu-io/open-design)**
+(`design-systems/duolingo/` — `DESIGN.md` + `tokens.css`).
+
+Implementation: [`mockup/assets/css/tokens.css`](../mockup/assets/css/tokens.css)
 and [`mockup/assets/css/app.css`](../mockup/assets/css/app.css).
 
-## Direction: soft tonal
+## Why this one
 
-Influenced by Material 3 and Fluent: surfaces separated by **tone**, generous
-rounding, soft elevation, and one accent colour the student picks for
-themselves.
+Two earlier directions were tried and rejected: a dark instrument-panel HUD
+(coherent but stiff) and a soft tonal Material/Fluent system (friendlier but
+still generic). Both were my own interpretation rather than a real system.
 
-> **This replaced an earlier direction.** The first version was an instrument
-> panel — hairline borders on near-black, uppercase monospace labels, HUD
-> scanlines. It was coherent, and it was *stiff*. Four specific things caused
-> that, and they are worth naming so they do not creep back:
->
-> | Stiff | Now |
-> |---|---|
-> | Every label uppercase monospace with wide letter-spacing | Labels are ordinary sentence-case text |
-> | 1px borders separating every surface | Surfaces separated by tone; borders are rare |
-> | Small radii (3–14px), square blueprint corners | 12–28px, pill-shaped controls |
-> | Four fixed theme presets to choose between | One warm system, six accent colours |
+Duolingo was chosen from a 152-package catalog because **the app already has
+its subject matter**. Streaks, badges, on-time counters and a daily habit loop
+are exactly what that design language was built to express — so the streak
+strip and the badge shelf look native here instead of bolted on.
 
-The four rules that hold it together:
+## What is taken verbatim
 
-1. **Tone, not borders.** A card is a lighter or darker surface than its parent.
-   Reaching for a border is usually a sign the tone step is too small.
-2. **Rounding is consistent and generous.** Controls are pills; cards are 24px.
-   Mixing radii is what makes an interface look assembled from parts.
-3. **One accent, used for state.** The accent marks the live thing — next class,
-   active tab, primary action. Status colours (success, warning, danger) are a
-   separate system and never double as the accent.
-4. **Motion overshoots slightly.** Buttons scale to 0.97 on press; the day
-   selector lifts; the FAB pops in. A spring curve on small interactions is
-   most of what reads as "fun" without adding any decoration.
+| | Value |
+|---|---|
+| Owl Green | `#58cc02` · deep `#46a302` · light `#89e219` |
+| Eel Blue | `#1cb0f6` |
+| Streak Orange | `#ff9600` · Bee Yellow `#ffc800` · Gem Pink `#ce82ff` |
+| Cardinal Red | `#ff4b4b` |
+| Shadow | `0 4px 0` — hard, no blur, the "tactile press" signature |
+| Borders | **2px, never hairlines** |
+| Radii | 12px buttons · 16px cards · 20px sheets · pill chips |
+| Easing | `cubic-bezier(.34, 1.56, .64, 1)` — back-out overshoot |
+| Type scale | 12 / 13 / 15 / 18 / 24 / 32 / 40 / 56 |
 
-## Accent seeds
+The signature is the shadow. A button sits on a 4px hard edge and collapses to
+`0 0 0` on `:active`, so it physically depresses under the finger. That one
+detail does more for the "fun" brief than any amount of colour.
 
-The student picks one of six. Every token follows.
+## Four deliberate departures
+
+### 1 · Text on a bright fill is dark, not white
+
+Duolingo's own pairing puts white on `#58cc02`. Measured:
+
+| Pairing | Ratio | |
+|---|---|---|
+| white on Owl Green | **2.09:1** | fails WCAG AA badly |
+| white on Eel Blue | **2.44:1** | fails |
+| white on Streak Orange | **2.18:1** | fails |
+| dark ink on Owl Green | **7.86:1** | passes |
+| dark ink on Eel Blue | **6.72:1** | passes |
+| dark ink on Streak Orange | **7.52:1** | passes |
+
+The bright fill is the whole point of the system, so the fill is kept and the
+ink is changed. `--accent-ink` is the accent darkened until it clears 4.5:1 on
+its own fill.
+
+### 2 · An accent used as *text* is a darker variant
+
+Raw Owl Green on white is 1.9:1 — unreadable as a label. `--accent-text` is
+darkened until it clears 4.5:1 on the canvas:
+
+| Accent | On white | On the dark canvas |
+|---|---|---|
+| Green | `#3a8701` → 4.52 | `#58cc02` → 8.05 |
+| Blue | `#147daf` → 4.58 | `#1cb0f6` → 6.88 |
+| Orange | `#ab6400` → 4.61 | `#ff9600` → 7.70 |
+
+On the dark canvas the raw brand colour already clears comfortably, so it is
+used directly.
+
+### 3 · A dark mode was added
+
+The source package is white-canvas only. These surfaces follow Duolingo's own
+app dark theme (deep teal-navy `#131f24`), and keep the 2px borders and the 4px
+shadow — losing those would lose the system.
+
+| | Light | Dark |
+|---|---|---|
+| Canvas | `#ffffff` | `#131f24` |
+| Surface | `#f7f7f7` | `#1f2f35` |
+| Text | `#3c3c3c` (11.03:1) | `#f1f7fb` (15.56:1) |
+| Secondary | `#6b6b6b` (5.33:1) | `#a9bcc4` (8.55:1) |
+| Border | `#e5e5e5` | `#37464f` |
+
+### 4 · Secondary text was retuned
+
+The source's `#777777` measures 4.48:1 on white — three hundredths short of AA.
+Moved to `#6b6b6b` (5.33:1).
+
+## Three accents
+
+Picked per person in **Pengaturan**, alongside light / dark / system.
 
 ```html
-<html data-seed="indigo" data-mode="light">
+<html data-accent="green" data-mode="light">
 ```
 
-Values were **derived numerically, not picked by eye** — each seed was darkened
-toward black (light mode) or lightened toward white (dark mode) until it met a
-threshold:
-
-| Seed | Light accent | vs surface | white on it | Dark accent | vs surface |
-|---|---|---|---|---|---|
-| Indigo | `#5b5bd6` | 5.25 | 5.37 | `#8b8be2` | 6.07 |
-| Blue | `#1971e3` | 4.55 | 4.65 | `#5195ee` | 6.07 |
-| Green | `#1c853a` | 4.60 | 4.70 | `#4ba565` | 6.06 |
-| Amber | `#ba5a08` | 4.51 | 4.61 | `#e8720c` | 6.03 |
-| Pink | `#ce3a75` | 4.58 | 4.68 | `#e26c9b` | 6.04 |
-| Teal | `#008476` | 4.50 | 4.60 | `#38a398` | 6.05 |
-
-Every accent clears **4.5:1** as text on its own surface and as button text in
-light mode, and **6:1** in dark mode. Neutrals clear comfortably: body text
-16.77:1 light and 14.46:1 dark; secondary text 8.58:1 and 10.77:1.
-
-This matters because an accent colour is a *user* choice. A picker that lets
-someone select an unreadable combination is a bug, not a feature — so the picker
-only offers values that were checked first.
-
-## Tokens
-
-```css
---surface  --surface-dim  --surface-container  --surface-high  --surface-card
---on-surface  --on-surface-variant  --outline
---primary  --on-primary  --primary-container  --on-primary-container
---success --warning --danger --info   (each with a -bg companion)
---subj-1 … --subj-6                   (subject identity, dots and rails only)
---e1 --e2 --e3                        (elevation)
---r-xs … --r-full                     (shape)
---sp-1 … --sp-8                       (spacing)
---font-display --font-sans --font-mono
---ease --ease-bounce --dur-fast --dur --dur-slow
-```
-
-`app.css` contains **no literal colour**. That constraint is what lets twelve
-palettes work from one stylesheet; a hex value in a component rule will look
-wrong in at least half of them.
+All three are brand colours from the source package rather than invented hues:
+Owl Green is the primary, Eel Blue is its hint/info colour, Streak Orange is the
+streak counter. Six combinations total, every one verified distinct and legible.
 
 ## Typography
 
-| Role | Face | Use |
+| Role | Face | Note |
 |---|---|---|
-| Display | **Outfit** 500–700 | Headings, metric numbers, brand, avatars |
-| UI | **Plus Jakarta Sans** 400–700 | Everything read as language |
-| Data | **DM Mono** 400–500 | Times, countdowns, NIM — nothing else |
+| Display | **Fredoka** 500–700 | Feather Bold is proprietary; Fredoka is the closest rounded face on Google Fonts |
+| Body | **Nunito** 600–800 | Stands in for Mona Sans. Body weight is **600**, not 400 — the system runs heavy and 400 reads thin |
+| Data | **DM Mono** | Times, countdowns, NIM only |
 
-Outfit is geometric and slightly rounded, which carries the friendliness without
-a novelty face. Plus Jakarta Sans is warm and holds up at 12–13px on a phone.
-Monospace is now confined to digits that must align; the old design used it for
-labels, which is precisely what made it feel like a readout.
-
-`font-variant-numeric: tabular-nums` on every countdown and statistic. Without
-it the digits change width as they tick and the row jitters.
+Labels and buttons are uppercase with light tracking, which is the source's
+chrome convention. This is the one place uppercase earns its keep — on short
+action words, not on paragraph labels.
 
 ## Layout
 
 ```
- < 640px   single column · bottom navigation with a pill indicator · FAB
+ < 640px   single column · bottom nav with a bordered pill · FAB
  ≥ 820px   two columns where content allows
- ≥ 1024px  persistent navigation rail · full week grid · 1240px max
+ ≥ 1024px  navigation rail · full week grid · 1080px max (source container-max)
 ```
-
-The timetable still changes form rather than scaling — agenda on a phone,
-scrollable grid on a tablet, full week on desktop. A 7×12 grid cannot shrink to
-360px honestly.
-
-Grid children use `align-items: start` so a short panel does not stretch to its
-neighbour's height, and every flex or grid child that holds text carries
-`min-width: 0`.
 
 ## Motion
 
-| Element | Motion | Duration |
-|---|---|---|
-| Panel mount | fade + 10px rise, 40ms stagger | 380ms |
-| Button press | scale 0.97 | 120ms |
-| FAB entry | scale 0.8 → 1 with overshoot | 380ms |
-| Day selector | lift 2px + elevation on select | 220ms |
-| Checkbox | fill + scale 1.06 | 220ms bounce |
-| Live dot | opacity + scale breathe | 2.4s loop |
-| Toast | rise 18px + scale 0.96 | 380ms bounce |
-| Bottom sheet | rise 26px | 380ms |
+| Element | Motion |
+|---|---|
+| Button / FAB press | translateY(4–5px), shadow collapses to 0 |
+| Checkbox | fill + `scale(1.1) rotate(-6deg)` |
+| Card mount | rise 12px + `scale(.985)`, overshoot easing |
+| Day selector | lifts 2px and takes the accent fill |
+| Badge hover | lift 4px + `rotate(-2deg)` |
+| Live dot | pulse `scale(.6)` |
 
-Easing is `cubic-bezier(.2,0,0,1)` for entrances and
-`cubic-bezier(.34,1.4,.64,1)` where a small overshoot helps.
-
-Reduced motion is honoured through both `prefers-reduced-motion` and a manual
-toggle, since some students want it off while their OS setting stays on.
-Looping animations are suppressed entirely rather than shortened — an infinite
-loop compressed to 0.01ms is a strobe.
-
-## Components
-
-```
-Panel · Chip · StatusDot · Countdown · DataRow · Avatar · Bar · EmptyState
-Button (filled / tonal / ghost) · FAB · Segmented · SeedPicker · Switch row
-NavRail · BottomNav · BottomSheet · Toast
-ScheduleSlot · WeekGrid · DayStrip · TaskCard · OrgNode
-RoomList · MessageBubble · Composer · BadgeShelf · SkillCloud · ProjectCard
-```
-
-Each schedule subject keeps the same `--subj-*` colour everywhere, so a week
-reads by colour before it is read by text.
+Reduced motion is honoured via `prefers-reduced-motion` and a manual toggle;
+loops are suppressed entirely rather than shortened.
 
 ## Accessibility
 
-- [x] Accent seeds verified ≥ 4.5:1 light and ≥ 6:1 dark, all six (table above)
-- [x] Neutrals verified in both modes
-- [x] `prefers-reduced-motion` honoured, loops suppressed not shortened
-- [x] Focus ring: 2px accent, 2px offset, never removed
-- [x] No horizontal page scroll at 1280 / 390 / 320px, all 8 screens
+- [x] Accent ink on fills ≥ 4.5:1, all three accents (table above)
+- [x] Accent-as-text ≥ 4.5:1, both modes
+- [x] Body text 11.03:1 light, 15.56:1 dark; secondary 5.33 / 8.55
+- [x] Six accent × mode combinations verified distinct
+- [x] No horizontal page scroll at 1280 / 390 / 320px on all 8 screens
 - [x] Status carries a text label, not colour alone
+- [x] `prefers-reduced-motion` honoured
 - [ ] Full keyboard navigation — Phase 1
-- [ ] Screen-reader labels on every icon-only control — Phase 1
-- [ ] 44×44px touch targets audited — Phase 1 (nav and FAB already clear it)
+- [ ] Screen-reader labels on icon-only controls — Phase 1
 
-Unchecked items are implementation work, not claims about the prototype.
+Note that the chunky-shadow press depends on `:active`, which has no keyboard
+equivalent — Phase 1 must add a `:focus-visible` treatment that reads as
+clearly as the press does.
 
 ## Verification
 
-`mockup/tests/check.mjs` drives the prototype in Chromium and asserts that all
-8 screens render, the countdown ticks, interactions change state, **all 12 seed ×
-mode combinations produce distinct palettes**, `mode: system` resolves to a
-concrete value rather than leaking through to the tokens, and no screen leaks
-horizontal page scroll at 390px or 320px.
+`mockup/tests/check.mjs` drives the prototype in Chromium and asserts all 8
+screens render, the countdown ticks, interactions change state, all 6 accent ×
+mode combinations produce distinct palettes, `system` resolves to a concrete
+mode, and no screen leaks horizontal page scroll at 390px or 320px.
 
-It has caught five real layout bugs so far, including two in this redesign: the
-settings segmented control overflowing by 10px at 380px and 50px at 320px, and
-an invisible selection ring on the accent picker (white on white, because the
-rule used `currentColor`).
+Bugs it has caught across the three design iterations: 306px and 29px of
+overflow on jadwal and obrolan, a tab bar visible on desktop, a 10px/50px
+overflow on settings, an invisible accent selection ring, grid children
+stretching to dead space, and a 6px overflow on the org rows at 320px.
