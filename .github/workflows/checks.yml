@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------
+# Runs the two suites that already exist in this repository on every push and
+# pull request.
+#
+# Why this matters here specifically: authorisation for the whole product lives
+# in Row Level Security policies (db/policies.sql), not in application code.
+# A policy can be weakened by an innocent-looking schema edit and nothing will
+# fail loudly — the app simply starts allowing something it should not. The
+# pgTAP-style behavioural suite is the only thing that catches that, so it has
+# to run automatically rather than when someone remembers.
+# ---------------------------------------------------------------------------
+
+name: checks
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+# Cancel an in-flight run when the same branch is pushed again.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  database:
+    name: schema, policies and behaviour
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install PostgreSQL 16
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends postgresql-16 postgresql-contrib-16
+
+      - name: Run the suite
+        # run.sh provisions its own throwaway cluster, so no service container
+        # is needed and the run is identical to a developer's local one.
+        run: ./db/tests/run.sh
+        env:
+          PGBIN: /usr/lib/postgresql/16/bin
+
+  interface:
+    name: prototype layout and behaviour
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Check the prototype
+        # Asserts every screen renders, the countdown ticks, interactions change
+        # state, all six accent x mode palettes are distinct, the density tiers
+        # apply, XP rises, confetti cleans up after itself, celebrations are
+        # suppressed under reduced motion, and no screen leaks horizontal page
+        # scroll at 390px or 320px.
+        run: node mockup/tests/check.mjs ./shots
+
+      - name: Keep the screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: prototype-screenshots
+          path: shots/
+          retention-days: 7
