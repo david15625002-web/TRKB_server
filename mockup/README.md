@@ -12,6 +12,9 @@ python3 -m http.server 8080 --directory mockup
 | Works | Notes |
 |---|---|
 | 6 palettes | 3 brand accents (Owl Green, Eel Blue, Streak Orange) × light/dark, switched live in **Pengaturan**; `system` follows the device |
+| Density tiers | Beranda/Tugas/Profil run full weight; Jadwal/Organisasi/Obrolan/Notifikasi run calm |
+| Robi | The mascot — floats, blinks, and says something true about the screen |
+| XP, levels, confetti | Tick a task: confetti from the checkbox, a rising `+15 XP`, a combo counter, and a level-up toast at the threshold |
 | Navigation | 8 screens, sidebar on desktop, bottom tab bar on phone |
 | Live countdown | Ticks to the next class, computed from the sample jadwal |
 | Task completion | Tick a task, state updates, toast fires, counters recalculate |

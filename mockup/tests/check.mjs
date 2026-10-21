@@ -114,6 +114,79 @@ console.log(`  mode "system" resolves to: ${resolved}`);
 if (!['light','dark'].includes(resolved)) errors.push(`system mode leaked "${resolved}" into data-mode`);
 await page.evaluate(() => { S.seed='green'; S.mode='light'; applyTheme(); render(); });
 
+// --- density tiering: read-heavy screens must run calm, the rest full ------
+const DENSITY = { beranda:'full', tugas:'full', profil:'full', pengaturan:'full',
+                  jadwal:'calm', organisasi:'calm', obrolan:'calm', notifikasi:'calm' };
+for (const [pg, want] of Object.entries(DENSITY)) {
+  await page.evaluate(p => { S.laman = p; applyTheme(); render(); }, pg);
+  await page.waitForTimeout(90);
+  const got = await page.evaluate(() => document.documentElement.getAttribute('data-density'));
+  if (got !== want) errors.push(`density on ${pg}: want ${want}, got ${got}`);
+}
+console.log('  density tiers: 8 screens checked');
+
+// calm must actually be thinner, not just a different attribute
+const bw = {};
+for (const d of ['full','calm']) {
+  await page.evaluate(p => { S.laman = p; applyTheme(); render(); }, d === 'calm' ? 'jadwal' : 'beranda');
+  await page.waitForTimeout(120);
+  bw[d] = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--bw').trim());
+}
+console.log(`  border weight: full ${bw.full} -> calm ${bw.calm}`);
+if (parseFloat(bw.calm) >= parseFloat(bw.full)) errors.push('calm tier is not thinner than full');
+
+// --- XP: completing a task must raise the total and the level can only rise -
+await page.evaluate(() => { S.laman='tugas'; S.tugasState={}; DATA.tugas.forEach(t=>S.tugasState[t.id]=t.state); applyTheme(); render(); });
+await page.waitForTimeout(140);
+const xp0 = await page.evaluate(() => xpTotal());
+await page.click('.task:not(.done) .check');
+await page.waitForTimeout(280);
+const xp1 = await page.evaluate(() => xpTotal());
+console.log(`  XP: ${xp0} -> ${xp1}`);
+if (xp1 <= xp0) errors.push(`XP did not increase: ${xp0} -> ${xp1}`);
+const lv = await page.evaluate(() => [levelOf(xpTotal()), intoLevel(xpTotal())]);
+if (lv[1] < 0 || lv[1] >= 50) errors.push(`intoLevel out of range: ${lv[1]}`);
+console.log(`  level ${lv[0]}, ${lv[1]}/50 into it`);
+
+// confetti must clean itself up rather than piling up in the DOM
+const cf = await page.$$eval('.confetti', e => e.length);
+await page.waitForTimeout(2000);
+const cf2 = await page.$$eval('.confetti', e => e.length);
+console.log(`  confetti nodes: ${cf} during -> ${cf2} after`);
+if (cf2 !== 0) errors.push(`confetti leaked ${cf2} nodes`);
+
+// --- the mascot renders and follows the accent -----------------------------
+await page.evaluate(() => { S.laman='beranda'; render(); });
+await page.waitForTimeout(140);
+const robiN = await page.$$eval('.robi', e => e.length);
+console.log(`  Robi on beranda: ${robiN}`);
+if (!robiN) errors.push('mascot did not render');
+const robiFill = await page.evaluate(() => {
+  const el = document.querySelector('.robi .body');
+  return el ? getComputedStyle(el).fill : null;
+});
+await page.evaluate(() => { S.seed='orange'; applyTheme(); render(); });
+await page.waitForTimeout(200);
+const robiFill2 = await page.evaluate(() => {
+  const el = document.querySelector('.robi .body');
+  return el ? getComputedStyle(el).fill : null;
+});
+console.log(`  Robi follows accent: ${robiFill} -> ${robiFill2}`);
+if (robiFill === robiFill2) errors.push('mascot did not follow the accent change');
+await page.evaluate(() => { S.seed='green'; applyTheme(); render(); });
+
+// --- reduced motion must suppress celebrations entirely --------------------
+await page.evaluate(() => { S.gerak=false; S.laman='tugas'; applyTheme(); render(); });
+await page.waitForTimeout(140);
+await page.click('.task:not(.done) .check');
+await page.waitForTimeout(220);
+const cfOff = await page.$$eval('.confetti', e => e.length);
+const xpOff = await page.$$eval('.xppop', e => e.length);
+console.log(`  reduced motion: confetti ${cfOff}, xp pops ${xpOff} (both must be 0)`);
+if (cfOff || xpOff) errors.push('celebrations fired with motion reduced');
+await page.evaluate(() => { S.gerak=true; applyTheme(); render(); });
+
 // phone overflow
 await page.setViewportSize({ width: 360, height: 760 });
 for (const p of pages) {

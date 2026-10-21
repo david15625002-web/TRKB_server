@@ -551,3 +551,162 @@ code { font-family: var(--font-mono); font-size: .92em; background: var(--surfac
   .brand small { display: none; }
   .brand .bn { font-size: 17px; }
 }
+
+/* ==========================================================================
+   CALM TIER refinements
+   The tokens already thin the borders and shadows. These rules take the
+   remaining loud edges off the read-heavy screens.
+   ========================================================================== */
+
+:root[data-density="calm"] .slot:hover,
+:root[data-density="calm"] .task:hover,
+:root[data-density="calm"] .bdg:hover { transform: none; }
+:root[data-density="calm"] .slot:hover { background: var(--surface); }
+
+:root[data-density="calm"] .chip {
+  font-weight: 700; text-transform: none; letter-spacing: 0;
+  border-width: 1px; font-size: 12px;
+}
+:root[data-density="calm"] .navlink,
+:root[data-density="calm"] .btn,
+:root[data-density="calm"] .segmented button {
+  text-transform: none; letter-spacing: 0; font-size: 14px;
+}
+:root[data-density="calm"] .btn { box-shadow: 0 2px 0 var(--border-strong); font-weight: 700; }
+:root[data-density="calm"] .btn:active { transform: translateY(2px); }
+:root[data-density="calm"] .btn.primary { box-shadow: 0 2px 0 var(--accent-deep); }
+:root[data-density="calm"] .daybtn { box-shadow: 0 2px 0 var(--border); }
+:root[data-density="calm"] .daybtn[aria-pressed="true"] { box-shadow: 0 2px 0 var(--accent-deep); }
+:root[data-density="calm"] .slot .nm { font-weight: 700; }
+:root[data-density="calm"] .node .rl { text-transform: none; letter-spacing: 0; font-weight: 600; }
+:root[data-density="calm"] .week .hd { text-transform: none; letter-spacing: 0; }
+
+/* ==========================================================================
+   ROBI — the mascot
+   A small robot that reacts to what is on screen. Duolingo's package calls for
+   "mascot-as-character, not a static logo"; a robotics program has the obvious
+   character to cast.
+   ========================================================================== */
+
+.robi { display: block; overflow: visible; }
+.robi .body { fill: var(--robi-body); }
+.robi .face { fill: var(--robi-face); }
+.robi .eye  { fill: var(--robi-eye); transform-origin: center; }
+.robi .ant  { stroke: var(--robi-body); stroke-width: 3.2; stroke-linecap: round; fill: none; }
+.robi .bulb { fill: var(--xp); }
+.robi .mouth { stroke: var(--robi-eye); stroke-width: 2.6; stroke-linecap: round; fill: none; }
+
+/* idle: a slow blink and a gentle hover */
+.robi.idle { animation: robifloat 3.4s var(--ease-out) infinite; }
+.robi.idle .eye { animation: robiblink 4.2s steps(1) infinite; }
+@keyframes robifloat { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-4px) } }
+@keyframes robiblink { 0%,92%,100% { transform: scaleY(1) } 95% { transform: scaleY(.1) } }
+
+/* happy: bounce and the bulb lights up */
+.robi.happy { animation: robihop .9s var(--ease) 2; }
+.robi.happy .bulb { animation: robiglow .9s var(--ease) 2; }
+@keyframes robihop { 0%,100% { transform: translateY(0) rotate(0) } 30% { transform: translateY(-10px) rotate(-7deg) } 60% { transform: translateY(0) rotate(5deg) } }
+@keyframes robiglow { 0%,100% { opacity: 1; r: 4 } 50% { opacity: .55; r: 6 } }
+
+/* sleeping: used on empty states */
+.robi.sleep { animation: robisleep 3.6s var(--ease-out) infinite; }
+@keyframes robisleep { 0%,100% { transform: translateY(0) rotate(-5deg) } 50% { transform: translateY(3px) rotate(-5deg) } }
+
+.robislot { display: flex; align-items: center; gap: var(--sp-3); }
+.robibubble {
+  position: relative; flex: 1; min-width: 0;
+  padding: 10px var(--sp-4); border-radius: var(--r-md);
+  background: var(--surface); border: var(--bw) solid var(--border);
+  font-size: 13.5px; font-weight: 700; color: var(--fg);
+}
+.robibubble::before {
+  content: ''; position: absolute; left: -7px; top: 50%; margin-top: -6px;
+  width: 12px; height: 12px; background: var(--surface);
+  border-left: var(--bw) solid var(--border); border-bottom: var(--bw) solid var(--border);
+  transform: rotate(45deg); border-radius: 0 0 0 3px;
+}
+
+/* ---------- XP + level -------------------------------------------------- */
+
+.xpring { position: relative; width: 44px; height: 44px; flex: none; }
+.xpring svg { transform: rotate(-90deg); display: block; }
+.xpring .track { stroke: var(--xp-track); }
+.xpring .fill  { stroke: var(--xp); stroke-linecap: round;
+  transition: stroke-dashoffset 900ms var(--ease); }
+.xpring .lvl {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--fg);
+}
+.xpring.lg { width: 92px; height: 92px; }
+.xpring.lg .lvl { font-size: 26px; }
+
+.xprow { display: flex; align-items: center; gap: var(--sp-3); }
+.xprow .amt { font-family: var(--font-display); font-size: 19px; font-weight: 600; color: var(--warn-text); }
+
+/* a small floating "+10 XP" that rises and fades */
+/* A bare number was unreadable where it crossed a task title, so it rides on
+   its own pill. */
+.xppop {
+  position: fixed; z-index: 70; pointer-events: none;
+  padding: 4px 12px; border-radius: var(--r-pill);
+  background: var(--warn); color: #3d2c00;
+  border: 2px solid #3d2c00;
+  font-family: var(--font-display); font-weight: 700; font-size: 17px;
+  box-shadow: 0 3px 0 rgba(0,0,0,.18);
+  animation: xprise 1100ms var(--ease-out) forwards;
+}
+@keyframes xprise {
+  0%   { opacity: 0; transform: translate(-50%, 0) scale(.6); }
+  25%  { opacity: 1; transform: translate(-50%, -14px) scale(1.15); }
+  100% { opacity: 0; transform: translate(-50%, -62px) scale(1); }
+}
+
+/* ---------- confetti ---------------------------------------------------- */
+
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 65; overflow: hidden; }
+.confetti i {
+  position: absolute; width: 9px; height: 14px; border-radius: 2px;
+  animation: cfall var(--d, 1200ms) var(--ease-out) forwards;
+}
+@keyframes cfall {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, 240px)) rotate(var(--rot, 540deg)) scale(.6); }
+}
+
+/* ---------- combo ------------------------------------------------------- */
+
+.combo {
+  position: fixed; left: 50%; top: 24%; transform: translateX(-50%);
+  z-index: 70; pointer-events: none; text-align: center;
+  font-family: var(--font-display); font-weight: 700;
+  animation: combopop 1200ms var(--ease) forwards;
+}
+.combo .big { font-size: 46px; color: var(--accent); text-shadow: 0 4px 0 var(--accent-deep); }
+.combo .sm { font-size: 14px; color: var(--muted); font-family: var(--font-body); font-weight: 800; }
+@keyframes combopop {
+  0%   { opacity: 0; transform: translateX(-50%) scale(.5) }
+  20%  { opacity: 1; transform: translateX(-50%) scale(1.12) }
+  70%  { opacity: 1; transform: translateX(-50%) scale(1) }
+  100% { opacity: 0; transform: translateX(-50%) scale(.95) translateY(-18px) }
+}
+
+/* ---------- page transition --------------------------------------------- */
+
+#view { animation: pageIn 260ms var(--ease-out) both; }
+@keyframes pageIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+
+/* ---------- level-up banner --------------------------------------------- */
+
+.levelup {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-4); border-radius: var(--r-md);
+  background: var(--warn-bg); border: var(--bw) solid var(--warn);
+  box-shadow: 0 4px 0 var(--warn);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti, .xppop, .combo { display: none !important; }
+}
+:root[data-motion="off"] .confetti,
+:root[data-motion="off"] .xppop,
+:root[data-motion="off"] .combo { display: none !important; }

@@ -167,3 +167,48 @@
   --subj-1: #1cb0f6; --subj-2: #58cc02; --subj-3: #ff9600;
   --subj-4: #ce82ff; --subj-5: #ff4b4b; --subj-6: #2b70c9;
 }
+
+/* ==========================================================================
+   DENSITY TIERS
+
+   The Duolingo language is loud by design, and that is right for the screens
+   you open to feel something — the dashboard, your tasks, your profile. On the
+   screens you open to READ something dense (a week of timetable, an org chart,
+   a message list) the same 4px shadows and 2px borders fight the content.
+
+   So the system has two tiers. `calm` keeps every colour, radius and motion
+   curve and only reduces the physical weight: thinner borders, shallower
+   shadows, tighter rhythm. It is the same system speaking quietly, not a
+   second design.
+
+   Set per screen on <html data-density="calm">; the default is full.
+   ========================================================================== */
+
+:root[data-density="calm"] {
+  --bw: 1.5px;
+  --shadow: 0 2px 0 var(--border-strong);
+  --shadow-sm: 0 1px 0 var(--border);
+  --r-md: 14px;
+  --r-lg: 18px;
+  --sp-4: 14px;
+  --sp-5: 18px;
+}
+
+/* ==========================================================================
+   DELIGHT
+   XP, levels and the mascot. Duolingo's own system is mascot-driven, and a
+   robotics program has an obvious character to use.
+   ========================================================================== */
+
+:root {
+  --xp: #ffc800;            /* Bee Yellow — XP and level rings */
+  --xp-track: var(--surface-2);
+  --robi-body: var(--accent);
+  --robi-face: #0f1b1f;
+  --robi-eye: #ffffff;
+  --robi-glow: var(--accent-light);
+}
+:root[data-mode="dark"] {
+  --robi-face: #0a1216;
+  --xp-track: var(--surface-2);
+}

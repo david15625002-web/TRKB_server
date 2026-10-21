@@ -39,6 +39,9 @@ const S = {
          && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light',
   gerak: true,
   tugasState: {},
+  combo: 0,
+  comboAt: 0,
+  lastLevel: null,
   pesanTambahan: {},
 };
 DATA.tugas.forEach(t => (S.tugasState[t.id] = t.state));
@@ -111,10 +114,131 @@ function tickCountdown() {
     : `${String(j).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+
+/* ==========================================================================
+   ROBI — the mascot
+   Duolingo's package asks for a mascot that acts as a character rather than a
+   static logo. A robotics program has the obvious one to cast. Robi is drawn
+   from the accent token, so it changes colour with the student's choice.
+   ========================================================================== */
+
+function robi(size = 56, mood = 'idle') {
+  const happy = mood === 'happy';
+  const sleep = mood === 'sleep';
+  return `<svg class="robi ${mood}" width="${size}" height="${size}" viewBox="0 0 64 64"
+       role="img" aria-label="Robi, maskot TRKB">
+    <path class="ant" d="M32 13 V7"/>
+    <circle class="bulb" cx="32" cy="5" r="4"/>
+    <rect class="body" x="8" y="13" width="48" height="40" rx="14"/>
+    <rect class="face" x="15" y="21" width="34" height="24" rx="10"/>
+    ${sleep
+      ? `<path class="mouth" d="M22 31 h7 M35 31 h7"/>
+         <path class="mouth" d="M27 39 q5 -4 10 0"/>`
+      : happy
+        ? `<path class="mouth" d="M21 32 q4 -5 8 0 M35 32 q4 -5 8 0" />
+           <path class="mouth" d="M26 38 q6 6 12 0"/>`
+        : `<circle class="eye" cx="25" cy="31" r="3.6"/>
+           <circle class="eye" cx="39" cy="31" r="3.6"/>
+           <path class="mouth" d="M27 39 q5 3 10 0"/>`}
+    <rect class="body" x="2" y="28" width="6" height="14" rx="3"/>
+    <rect class="body" x="56" y="28" width="6" height="14" rx="3"/>
+  </svg>`;
+}
+
+// A line from Robi, chosen for the situation rather than at random, so it
+// always says something true about the screen.
+function robiSays() {
+  const aktif = DATA.tugas.filter(t => S.tugasState[t.id] !== 'done');
+  const mendesak = aktif.filter(t => t.jamLagi > 0 && t.jamLagi <= 6);
+  const telat = aktif.filter(t => t.jamLagi < 0);
+  if (telat.length)    return [`Ada ${telat.length} tugas lewat tenggat. Masih bisa dikejar.`, 'idle'];
+  if (mendesak.length) return [`${mendesak.length} tugas jatuh tempo hari ini. Ayo!`, 'idle'];
+  if (!aktif.length)   return ['Semua tugas beres. Istirahat dulu.', 'happy'];
+  const n = nextClass();
+  if (n && n.delta <= 60) return [`${n.mk} sebentar lagi di ${n.ruang}.`, 'idle'];
+  return [`${aktif.length} tugas menunggu. Runtun ${DATA.me.stats.streak} hari — jangan putus.`, 'idle'];
+}
+
+/* ---------- XP and levels -------------------------------------------------
+   XP is derived from the stats, never incremented in place, for the same
+   reason the streak is recomputed in SQL: a hand-counted total drifts and
+   then nobody trusts it. 50 XP per level.
+   ------------------------------------------------------------------------ */
+
+const XP_PER_TASK = 10, XP_ONTIME_BONUS = 5, XP_PER_LEVEL = 50;
+
+function xpTotal() {
+  const st = DATA.me.stats;
+  const extra = Object.values(S.tugasState).filter(v => v === 'done').length;
+  return st.tepat * (XP_PER_TASK + XP_ONTIME_BONUS) + st.telat * XP_PER_TASK + extra * XP_PER_TASK;
+}
+const levelOf = xp => Math.floor(xp / XP_PER_LEVEL) + 1;
+const intoLevel = xp => xp % XP_PER_LEVEL;
+
+function xpRing(xp, big = false) {
+  const r = big ? 40 : 19, c = 2 * Math.PI * r;
+  const pct = intoLevel(xp) / XP_PER_LEVEL;
+  const sw = big ? 8 : 5;
+  const d = big ? 92 : 44;
+  return `<div class="xpring ${big ? 'lg' : ''}">
+    <svg width="${d}" height="${d}" viewBox="0 0 ${d} ${d}">
+      <circle class="track" cx="${d/2}" cy="${d/2}" r="${r}" fill="none" stroke-width="${sw}"/>
+      <circle class="fill"  cx="${d/2}" cy="${d/2}" r="${r}" fill="none" stroke-width="${sw}"
+              stroke-dasharray="${c}" stroke-dashoffset="${c * (1 - pct)}"/>
+    </svg>
+    <span class="lvl">${levelOf(xp)}</span>
+  </div>`;
+}
+
+/* ---------- celebration --------------------------------------------------
+   Confetti and a floating XP number. Both are suppressed entirely under
+   reduced motion (in CSS), not merely shortened.
+   ------------------------------------------------------------------------ */
+
+function confetti(x, y) {
+  if (!S.gerak) return;
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const colors = ['var(--accent)', 'var(--xp)', 'var(--streak)', 'var(--gem)', 'var(--info)'];
+  for (let i = 0; i < 26; i++) {
+    const b = document.createElement('i');
+    const a = Math.random() * Math.PI - Math.PI / 2;
+    b.style.left = x + 'px'; b.style.top = y + 'px';
+    b.style.background = colors[i % colors.length];
+    b.style.setProperty('--dx', Math.round(Math.cos(a) * (60 + Math.random() * 170)) + 'px');
+    b.style.setProperty('--dy', Math.round(120 + Math.random() * 220) + 'px');
+    b.style.setProperty('--rot', Math.round(Math.random() * 900 - 450) + 'deg');
+    b.style.setProperty('--d', (900 + Math.random() * 700) + 'ms');
+    box.appendChild(b);
+  }
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 1800);
+}
+
+function xpPop(x, y, amount) {
+  if (!S.gerak) return;
+  const el = document.createElement('div');
+  el.className = 'xppop'; el.textContent = '+' + amount + ' XP';
+  el.style.left = x + 'px'; el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+function comboPop(n) {
+  if (!S.gerak || n < 2) return;
+  const el = document.createElement('div');
+  el.className = 'combo';
+  el.innerHTML = `<div class="big">${n}x</div><div class="sm">beruntun!</div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
 /* ---------- pages ------------------------------------------------------- */
 
 function pBeranda() {
   const n = nextClass();
+  const says = robiSays();
+  const xp = xpTotal();
   const hariIni = DATA.jadwal.filter(j => j.hari === S.hari);
   const aktif = DATA.tugas.filter(t => S.tugasState[t.id] !== 'done').sort((a, b) => a.jamLagi - b.jamLagi);
   const st = DATA.me.stats;
@@ -127,6 +251,13 @@ function pBeranda() {
   </div>
 
   <div class="stack">
+    <div class="panel tonal enter" style="padding:14px">
+      <div class="robislot">
+        ${robi(58, says[1])}
+        <div class="robibubble">${esc(says[0])}</div>
+      </div>
+    </div>
+
     <div class="next enter">
       <div style="min-width:0">
         <div style="font-size:13px;opacity:.85;margin-bottom:2px">Kelas berikutnya</div>
@@ -142,13 +273,24 @@ function pBeranda() {
       </div>
     </div>
 
-    <div class="streakbar enter">
-      <span class="fire">🔥</span>
-      <div style="min-width:0;flex:1">
-        <div class="n">${st.streak} hari beruntun!</div>
-        <div class="bar" style="margin-top:7px"><i style="width:${Math.min(100, st.streak / 30 * 100)}%"></i></div>
+    <div class="grid2 enter" style="gap:12px">
+      <div class="streakbar">
+        <span class="fire">🔥</span>
+        <div style="min-width:0;flex:1">
+          <div class="n">${st.streak} hari beruntun!</div>
+          <div class="bar" style="margin-top:7px"><i style="width:${Math.min(100, st.streak / 30 * 100)}%"></i></div>
+        </div>
+        <div class="note" style="font-weight:800">30</div>
       </div>
-      <div class="note" style="font-weight:800">30</div>
+      <div class="panel" style="padding:14px">
+        <div class="xprow">
+          ${xpRing(xp)}
+          <div style="min-width:0;flex:1">
+            <div class="amt">Level ${levelOf(xp)}</div>
+            <div class="note">${intoLevel(xp)} / ${XP_PER_LEVEL} XP menuju level ${levelOf(xp) + 1}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="metrics enter">
@@ -167,7 +309,7 @@ function pBeranda() {
         </header>
         <div class="body">
           ${hariIni.length ? `<div class="agenda">${hariIni.map(slotHTML).join('')}</div>`
-            : `<div class="empty"><div class="ico">${svg('jadwal', 24)}</div>Tidak ada kelas hari ini. Nikmati waktunya.</div>`}
+            : `<div class="empty">${robi(64, 'sleep')}<div style="margin-top:10px">Tidak ada kelas hari ini. Nikmati waktunya.</div></div>`}
         </div>
       </section>
 
@@ -180,7 +322,7 @@ function pBeranda() {
         <div class="body">
           <div class="stack" style="gap:8px">
             ${aktif.slice(0, 3).map(taskHTML).join('') ||
-              `<div class="empty"><div class="ico">${svg('check', 24)}</div>Tidak ada tugas aktif. Mantap.</div>`}
+              `<div class="empty">${robi(64, 'happy')}<div style="margin-top:10px">Tidak ada tugas aktif. Mantap.</div></div>`}
           </div>
         </div>
       </section>
@@ -329,7 +471,7 @@ function pTugas() {
       <header><span class="led danger"><i></i></span><h2>Aktif</h2>
         <div class="spacer"></div><span class="chip">${aktif.length}</span></header>
       <div class="body"><div class="stack" style="gap:8px">
-        ${aktif.map(taskHTML).join('') || `<div class="empty"><div class="ico">${svg('check', 24)}</div>Semua tugas selesai.</div>`}
+        ${aktif.map(taskHTML).join('') || `<div class="empty">${robi(64, 'happy')}<div style="margin-top:10px">Semua tugas selesai.</div></div>`}
       </div></div>
     </section>
 
@@ -506,6 +648,10 @@ function pProfil() {
         <button class="btn sm ghost" style="margin-bottom:6px" data-act="demo">Edit</button>
       </div>
       <div class="body">
+        <div class="robislot" style="margin-bottom:14px">
+          ${robi(52, 'happy')}
+          <div class="robibubble">Level ${levelOf(xpTotal())} · ${xpTotal()} XP terkumpul. ${st.streak} hari beruntun.</div>
+        </div>
         <div style="font-weight:500;margin-bottom:4px">${esc(m.headline)}</div>
         <p class="note">${esc(m.bio)}</p>
         <div class="row" style="margin-top:10px">
@@ -520,6 +666,13 @@ function pProfil() {
       <section class="panel enter">
         <header><h2>Statistik</h2></header>
         <div class="body">
+          <div class="xprow" style="margin-bottom:16px">
+            ${xpRing(xpTotal(), true)}
+            <div style="min-width:0;flex:1">
+              <div class="amt">Level ${levelOf(xpTotal())}</div>
+              <div class="note">${intoLevel(xpTotal())} / ${XP_PER_LEVEL} XP menuju level ${levelOf(xpTotal()) + 1}</div>
+            </div>
+          </div>
           <div class="row" style="justify-content:space-between;margin-bottom:6px">
             <span class="note">Ketepatan waktu</span><span class="mono" style="color:var(--success-text)">${pct}%</span>
           </div>
@@ -710,6 +863,10 @@ function render() {
     <button class="tab" data-go="${k}" ${S.laman === k ? 'aria-current="page"' : ''}>
       <span class="pill">${svg(k, 21)}</span><span>${l}</span></button>`).join('');
 
+  document.documentElement.setAttribute('data-density',
+    CALM.includes(S.laman) ? 'calm' : 'full');
+  const topXp = $('#topxp');
+  if (topXp) topXp.innerHTML = xpRing(xpTotal());
   $('#view').innerHTML = (PAGES[S.laman] || pBeranda)();
 
   // One floating primary action, only where there is an obvious one.
@@ -722,9 +879,14 @@ function render() {
   const m = $('#msgs'); if (m) m.scrollTop = m.scrollHeight;
 }
 
+// Screens you open to READ dense information run in the calm tier; screens
+// you open to feel something keep the full weight. See docs/08.
+const CALM = ['jadwal', 'organisasi', 'obrolan', 'notifikasi'];
+
 function applyTheme() {
   const r = document.documentElement;
   r.setAttribute('data-accent', S.seed);
+  r.setAttribute('data-density', CALM.includes(S.laman) ? 'calm' : 'full');
   // 'system' resolves now, so the tokens only ever see 'light' or 'dark'.
   const mode = S.mode === 'system'
     ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
@@ -752,10 +914,39 @@ document.addEventListener('click', e => {
   if (act === 'toggle') {
     const id = a.dataset.id;
     const now = S.tugasState[id] === 'done' ? 'todo' : 'done';
+    const before = levelOf(xpTotal());
+
+    // Fire the celebration from where the checkbox actually is, so the
+    // confetti comes out of the thing you pressed.
+    const r = a.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+
     S.tugasState[id] = now;
     const t = DATA.tugas.find(x => x.id === id);
-    render();
-    if (now === 'done') toast('Ditandai selesai', `${t.judul} · ${t.jamLagi > 0 ? 'tepat waktu' : 'terlambat'}`);
+
+    if (now === 'done') {
+      const onTime = t.jamLagi > 0;
+      const gained = XP_PER_TASK + (onTime ? XP_ONTIME_BONUS : 0);
+
+      // A combo only counts if the next one lands within 4 seconds.
+      S.combo = (Date.now() - S.comboAt < 4000) ? S.combo + 1 : 1;
+      S.comboAt = Date.now();
+
+      confetti(cx, cy);
+      xpPop(cx, cy, gained);
+      comboPop(S.combo);
+      render();
+
+      const after = levelOf(xpTotal());
+      if (after > before) {
+        toast(`Naik ke level ${after}!`, 'Terus begini dan runtunmu aman.');
+      } else {
+        toast('Ditandai selesai', `${t.judul} · ${onTime ? 'tepat waktu' : 'terlambat'}`);
+      }
+    } else {
+      S.combo = 0;
+      render();
+    }
   }
 
   if (act === 'setuju') { toast('Anggota disetujui', `${a.dataset.n} masuk ke ${DATA.me.kelas} dan ruang obrolan kelas.`); a.closest('.node').remove(); }

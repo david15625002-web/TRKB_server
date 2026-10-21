@@ -133,6 +133,9 @@ Recorded so they are not reopened:
 | Chat | Rooms + DMs, text and images, no E2E in v1, admin access stated plainly |
 | Profiles | Identity + skills + portfolio + gamification, all four layers |
 | Appearance | Duolingo design system (nexu-io/open-design); 3 brand accents × light/dark/system, chosen per person |
+| Density | Two tiers — full on the habit screens, calm on the read-heavy ones |
+| Mascot | Robi, a robot drawn from the accent token; says only what is true of the screen |
+| CI | GitHub Actions runs both suites on every push and pull request |
 | Dosen | Data only, no accounts |
 | Registration | Campus email + NIM, approved by Ketua/Sekretaris Kelas |
 | Reminders | H-1 at 18:00 + H-3h, user-overridable, quiet hours defer |
